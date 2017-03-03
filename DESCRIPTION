@@ -1,9 +1,13 @@
 Package: enrichR
-Title: What the Package Does (one line, title case)
-Version: 0.0.0.9000
-Authors@R: person("First", "Last", email = "first.last@example.com", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
-Depends: R (>= 3.4.0)
-License: What license is it under?
+Title: Provides an R interface to enrichR
+Version: 1.0
+Authors@R: person("Wajid", "Jawaid", email = "wj241@cam.ac.uk", role = c("aut", "cre"))
+Description: Provides an R interface to all enrichR (http://amp.pharm.mssm.edu/Enrichr/) databases.
+Depends: R (>= 3.0.0)
+License: GPL (>=2)
 Encoding: UTF-8
 LazyData: true
+Imports:
+   httr,
+   rjson
+RoxygenNote: 6.0.1
