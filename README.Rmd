@@ -1,0 +1,76 @@
+---
+title: "An R interface to the Enrichr database"
+author: "Wajid Jawaid"
+email: "wj241@cam.ac.uk"
+date: "`r Sys.Date()`"
+bibliography: ./tools/enrichr.bib
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "./tools/README-"
+)
+```
+
+# Installation
+
+**enrichR** can be installed from Github or soon from CRAN.
+
+## Github
+
+```{r, echo = TRUE, eval = FALSE}
+library(devtools)
+install_github("wjawaid/enrichR")
+```
+
+## CRAN
+
+The package can be downloaded from CRAN using:
+
+```{r, echo = TRUE, eval = FALSE}
+install.packages("enrichR")
+```
+
+# Usage example
+
+**enrichR** provides an interface to the Enrichr database [@kuleshov_enrichr:_2016] hosted at http://amp.pharm.mssm.edu/Enrichr.  
+
+First find the list of all available databases from Enrichr.
+
+```{r, echo = TRUE, eval = TRUE}
+library(enrichR)
+dbs <- listEnrichrDbs()
+```
+
+```{r, echo = TRUE, eval = FALSE}
+head(dbs)
+```
+
+```{r, echo = FALSE, results='asis'}
+library(knitr)
+kable(head(dbs))
+```
+
+View and select your favourite databases. Then query enrichr, in this case I have used genes associated with embryonic haematopoiesis.
+
+```{r, echo = TRUE, eval = TRUE}
+dbs <- c("GO_Molecular_Function_2015", "GO_Cellular_Component_2015", "GO_Biological_Process_2015")
+enriched <- enrichr(c("Runx1", "Gfi1", "Gfi1b", "Spi1", "Gata1", "Kdr"), dbs)
+```
+
+Now view the results table.
+
+```{r, echo = TRUE, eval = FALSE}
+enriched[["GO_Biological_Process_2015"]]
+```
+
+```{r, echo = FALSE, results = 'asis'}
+kable(head(enriched[["GO_Biological_Process_2015"]]))
+```
+
+# References
