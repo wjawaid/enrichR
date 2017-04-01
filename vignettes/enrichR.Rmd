@@ -1,21 +1,14 @@
 ---
 title: "An R interface to the Enrichr database"
 author: "Wajid Jawaid"
-email: "wj241@cam.ac.uk"
 date: "`r Sys.Date()`"
-bibliography: ./vignettes/enrichr.bib
-output: github_document
+bibliography: enrichr.bib
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{An R interface to teh Enrichr database}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
-
-<!-- README.md is generated from README.Rmd. Please edit that file -->
-
-```{r, echo = FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>",
-  fig.path = "./tools/README-"
-)
-```
 
 # Installation
 
