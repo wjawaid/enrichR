@@ -16,6 +16,7 @@ knitr::opts_chunk$set(
   fig.path = "./tools/README-"
 )
 ```
+[![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/enrichR)](https://cran.r-project.org/package=enrichR)
 
 # Installation
 
