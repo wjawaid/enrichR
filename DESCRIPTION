@@ -2,7 +2,7 @@ Package: enrichR
 Title: Provides an R Interface to 'Enrichr'
 Version: 1.0
 Authors@R: person("Wajid", "Jawaid", email = "wj241@cam.ac.uk", role = c("aut", "cre"))
-Description: Provides an R interface to all Enrichr <http://amp.pharm.mssm.edu/Enrichr/> databases.
+Description: Provides an R interface to all 'Enrichr' databases, a web-based tool for analysing gene sets and returns any enrichment of common annotated biological functions. <http://amp.pharm.mssm.edu/Enrichr/>.
 Depends: R (>= 3.0.0)
 License: GPL (>=2)
 Encoding: UTF-8
