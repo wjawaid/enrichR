@@ -1,5 +1,3 @@
-[![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/enrichR)](https://cran.r-project.org/package=enrichR)
-
 ---
 title: "An R interface to the Enrichr database"
 author: "Wajid Jawaid"
@@ -18,6 +16,8 @@ knitr::opts_chunk$set(
   fig.path = "./tools/README-"
 )
 ```
+
+[![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/enrichR)](https://cran.r-project.org/package=enrichR)
 
 # Installation
 
@@ -55,7 +55,7 @@ head(dbs)
 
 ```{r, echo = FALSE, results='asis'}
 library(knitr)
-kable(head(dbs))
+kable(head(dbs[c(1:3,5:6),]))
 ```
 
 View and select your favourite databases. Then query enrichr, in this case I have used genes associated with embryonic haematopoiesis.
@@ -72,7 +72,9 @@ enriched[["GO_Biological_Process_2015"]]
 ```
 
 ```{r, echo = FALSE, results = 'asis'}
-kable(head(enriched[["GO_Biological_Process_2015"]]))
+x <- head(enriched[["GO_Biological_Process_2015"]])
+x[,1] <- gsub("GO:", "GO_", x[,1])
+kable(x)
 ```
 
 # References

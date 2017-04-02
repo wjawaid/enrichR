@@ -1,8 +1,8 @@
 Package: enrichR
-Title: Provides an R interface to enrichR
+Title: Provides an R Interface to 'Enrichr'
 Version: 1.0
 Authors@R: person("Wajid", "Jawaid", email = "wj241@cam.ac.uk", role = c("aut", "cre"))
-Description: Provides an R interface to all enrichR (http://amp.pharm.mssm.edu/Enrichr/) databases.
+Description: Provides an R interface to all Enrichr <http://amp.pharm.mssm.edu/Enrichr/> databases.
 Depends: R (>= 3.0.0)
 License: GPL (>=2)
 Encoding: UTF-8
