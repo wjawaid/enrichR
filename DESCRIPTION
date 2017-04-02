@@ -2,7 +2,7 @@ Package: enrichR
 Title: Provides an R Interface to 'Enrichr'
 Version: 1.0
 Authors@R: person("Wajid", "Jawaid", email = "wj241@cam.ac.uk", role = c("aut", "cre"))
-Description: Provides an R interface to all 'Enrichr' databases, a web-based tool for analysing gene sets and returns any enrichment of common annotated biological functions. <http://amp.pharm.mssm.edu/Enrichr/>.
+Description: Provides an R interface to all 'Enrichr' databases. 'Enrichr' is a web-based tool for analysing gene sets and returns any enrichment of common annotated biological features. Quaoting from their website 'Enrichment analysis is a computational method for inferring knowledge about an input gene set by comparing it to annotated gene sets representing prior biological knowledge.' See (<http://amp.pharm.mssm.edu/Enrichr/>) for further details.
 Depends: R (>= 3.0.0)
 License: GPL (>=2)
 Encoding: UTF-8
