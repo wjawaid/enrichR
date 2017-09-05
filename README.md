@@ -5,6 +5,7 @@ Wajid Jawaid
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 [![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/enrichR)](https://cran.r-project.org/package=enrichR) [![Project Status: Active - The project has reached a stable, usable state and is being actively developed.](http://www.repostatus.org/badges/latest/active.svg)](http://www.repostatus.org/#active)
+[![CRAN mirror downloads](http://cranlogs.r-pkg.org/badges/enrichR)](https://cran.r-project.org/package=enrichR/)
 
 Installation
 ============
