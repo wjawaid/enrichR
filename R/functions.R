@@ -37,6 +37,7 @@ listEnrichrDbs <- function() {
 ##' @importFrom httr GET POST
 ##' @importFrom rjson fromJSON
 ##' @importFrom utils read.table
+##' @importFrom XML xpathApply htmlParse xmlValue
 ##' @export
 enrichr <- function(genes, databases = NULL) {
     ## if (is.null(databases)) {
@@ -73,7 +74,8 @@ enrichr <- function(genes, databases = NULL) {
         cat("  Querying ", x, "... ", sep="")
         r <- GET(url="http://amp.pharm.mssm.edu/Enrichr/export",
                  query=list(file="API", backgroundType=x))
-        r <- intToUtf8(r$content)
+        r <- xpathApply(htmlParse(intToUtf8(r$content), asText=T),
+                        '//body//text()', xmlValue)[[1]]
         tc <- textConnection(r)
         r <- read.table(tc, sep = "\t", header = TRUE, quote = "")
         close(tc)

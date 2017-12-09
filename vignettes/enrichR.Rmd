@@ -52,8 +52,8 @@ kable(head(dbs[c(1:3,5:6),]))
 View and select your favourite databases. Then query enrichr, in this case I have used genes associated with embryonic haematopoiesis.
 
 ```{r, echo = TRUE, eval = TRUE}
-dbs <- c("GO_Molecular_Function_2015", "GO_Cellular_Component_2015", "GO_Biological_Process_2015")
-enriched <- enrichr(c("Runx1", "Gfi1", "Gfi1b", "Spi1", "Gata1", "Kdr"), dbs)
+dbs <- c("GO_Molecular_Function_2015", "GO_Cellular_Component_2015", "GO_Biological_Process_2015", "dbGaP")
+enriched <- enrichr(c("RUNX1", "GFI1", "GFI1B", "SPI1", "GATA1", "KDR", "PML"), dbs)
 ```
 
 Now view the results table.
