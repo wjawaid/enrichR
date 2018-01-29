@@ -9,8 +9,7 @@ Encoding: UTF-8
 LazyData: true
 Imports:
    httr,
-   rjson,
-    XML
+   rjson
 RoxygenNote: 6.0.1
 Suggests: knitr,
     rmarkdown
