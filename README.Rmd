@@ -73,6 +73,13 @@ Now view the results table.
 enriched[["GO_Biological_Process_2015"]]
 ```
 
+You can give many genes.
+```{r, echo = TRUE, eval = FALSE}
+data(genes790)
+length(genes790)
+head(enrichr(genes790, c('LINCS_L1000_Chem_Pert_up'))[[1]])
+```
+
 ```{r, echo = FALSE, results = 'asis'}
 x <- head(enriched[["GO_Biological_Process_2015"]])
 x[,1] <- gsub("GO:", "GO_", x[,1])
