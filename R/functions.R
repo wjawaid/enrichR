@@ -54,7 +54,7 @@ enrichr <- function(genes, databases = NULL) {
     ##     databases <- gsub(" ", "_", dbs)
     ## }
     cat("Uploading data to Enrichr... ")
-    if (is.vector(genes) & genes != "" & length(genes) != 0) {
+    if (is.vector(genes) & ! all(genes == "") & length(genes) != 0) {
         temp <- POST(url="http://amp.pharm.mssm.edu/Enrichr/enrich",
                      body=list(list=paste(genes, collapse="\n")))
     } else if (is.data.frame(genes)) {
@@ -75,7 +75,7 @@ enrichr <- function(genes, databases = NULL) {
                  query=list(file="API", backgroundType=x))
         r <- gsub("&#39;", "'", intToUtf8(r$content))
         tc <- textConnection(r)
-        r <- read.table(tc, sep = "\t", header = TRUE, quote = "")
+        r <- read.table(tc, sep = "\t", header = TRUE, quote = "", comment.char="")
         close(tc)
         cat("Done.\n")
         return(r)
