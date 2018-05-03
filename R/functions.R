@@ -75,7 +75,7 @@ enrichr <- function(genes, databases = NULL) {
                  query=list(file="API", backgroundType=x))
         r <- gsub("&#39;", "'", intToUtf8(r$content))
         tc <- textConnection(r)
-        r <- read.table(tc, sep = "\t", header = TRUE, quote = "")
+        r <- read.table(tc, sep = "\t", header = TRUE, quote = "", comment.char="")
         close(tc)
         cat("Done.\n")
         return(r)
