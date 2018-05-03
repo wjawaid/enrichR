@@ -54,7 +54,7 @@ enrichr <- function(genes, databases = NULL) {
     ##     databases <- gsub(" ", "_", dbs)
     ## }
     cat("Uploading data to Enrichr... ")
-    if (is.vector(genes) & genes != "" & length(genes) != 0) {
+    if (is.vector(genes) & ! all(genes == "") & length(genes) != 0) {
         temp <- POST(url="http://amp.pharm.mssm.edu/Enrichr/enrich",
                      body=list(list=paste(genes, collapse="\n")))
     } else if (is.data.frame(genes)) {
