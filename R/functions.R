@@ -100,7 +100,7 @@ enrichr <- function(genes, databases = NULL) {
         return()
     }
     cat("Uploading data to Enrichr... ")
-    if (is.vector(genes)) {
+    if (is.vector(genes) & ! all(genes == "") & length(genes) != 0) {
         temp <- POST(url=paste0(getOption("base_address"), "enrich"),
                      body=list(list=paste(genes, collapse="\n")))
     } else if (is.data.frame(genes)) {
@@ -108,7 +108,7 @@ enrichr <- function(genes, databases = NULL) {
                      body=list(list=paste(paste(genes[,1], genes[,2], sep=","),
                                           collapse="\n")))
     } else {
-        warning("genes must be a vector of gene names or a dataframe with genes and score.")
+        warning("genes must be a non-empty vector of gene names or a dataframe with genes and score.")
     }
     getEnrichr(url=paste0(getOption("base_address"), "share"))
     cat("Done.\n")
@@ -119,15 +119,10 @@ enrichr <- function(genes, databases = NULL) {
         cat("  Querying ", x, "... ", sep="")
         r <- getEnrichr(url=paste0(getOption("base_address"), "export"),
                         query=list(file="API", backgroundType=x))
-        ## if (length(r) == 1 && !is.list(r)) {
-        ##     if (r == "FAIL") {
-        ##         return()
-        ##     }
-        ## }
         if (!getOption("enrichRLive")) return()
-        r <- intToUtf8(r$content)
+        r <- gsub("&#39;", "'", intToUtf8(r$content))
         tc <- textConnection(r)
-        r <- read.table(tc, sep = "\t", header = TRUE, quote = "")
+        r <- read.table(tc, sep = "\t", header = TRUE, quote = "", comment.char="")
         close(tc)
         cat("Done.\n")
         return(r)
@@ -147,8 +142,8 @@ enrichr <- function(genes, databases = NULL) {
 ##' @param file Name of output file.
 ##' @param sep Default TAB. How to separate fields.
 ##' @param columns Columns from each entry of data.
-##' 1-"Index", 2-"Name", 3-"Adjusted_P-value", 4-"Z-score"         
-##' 5-"Combined_Score", 6-"Genes", 7-"Overlap_P-value" 
+##' 1-"Index", 2-"Name", 3-"Adjusted_P-value", 4-"Z-score"
+##' 5-"Combined_Score", 6-"Genes", 7-"Overlap_P-value"
 ##' @return Produces file.
 ##' @author Wajid Jawaid
 ##' @export
