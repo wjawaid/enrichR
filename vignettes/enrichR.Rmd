@@ -16,6 +16,10 @@ vignette: >
 
 ## Github
 
+```{r, echo = FALSE, eval = TRUE}
+websiteLive <- TRUE
+```
+
 ```{r, echo = TRUE, eval = FALSE}
 library(devtools)
 install_github("wjawaid/enrichR")
@@ -41,31 +45,34 @@ dbs <- listEnrichrDbs()
 ```
 
 ```{r, echo = TRUE, eval = FALSE}
-head(dbs)
+if (is.null(dbs)) websiteLive <- FALSE
+if (websiteLive) head(dbs)
 ```
 
 ```{r, echo = FALSE, results='asis'}
 library(knitr)
-kable(head(dbs[c(1:3,5:6),]))
+if (websiteLive) kable(head(dbs[c(1:3,5:6),]))
 ```
 
 View and select your favourite databases. Then query enrichr, in this case I have used genes associated with embryonic haematopoiesis.
 
 ```{r, echo = TRUE, eval = TRUE}
 dbs <- c("GO_Molecular_Function_2015", "GO_Cellular_Component_2015", "GO_Biological_Process_2015")
-enriched <- enrichr(c("Runx1", "Gfi1", "Gfi1b", "Spi1", "Gata1", "Kdr"), dbs)
+if (websiteLive) enriched <- enrichr(c("Runx1", "Gfi1", "Gfi1b", "Spi1", "Gata1", "Kdr"), dbs)
 ```
 
 Now view the results table.
 
 ```{r, echo = TRUE, eval = FALSE}
-enriched[["GO_Biological_Process_2015"]]
+if (websiteLive) enriched[["GO_Biological_Process_2015"]]
 ```
 
 ```{r, echo = FALSE, results = 'asis'}
-x <- head(enriched[["GO_Biological_Process_2015"]])
-x[,1] <- gsub("GO:", "GO_", x[,1])
-kable(x)
+if (websiteLive) {
+ x <- head(enriched[["GO_Biological_Process_2015"]])
+ x[,1] <- gsub("GO:", "GO_", x[,1])
+ kable(x)
+}
 ```
 
 # References
