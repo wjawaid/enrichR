@@ -14,7 +14,7 @@ printEnrich(data, file, sep = "\\t", columns = c(2, 3, 6))
 \item{sep}{Default TAB. How to separate fields.}
 
 \item{columns}{Columns from each entry of data.
-1-"Index", 2-"Name", 3-"Adjusted_P-value", 4-"Z-score"         
+1-"Index", 2-"Name", 3-"Adjusted_P-value", 4-"Z-score"
 5-"Combined_Score", 6-"Genes", 7-"Overlap_P-value"}
 }
 \value{

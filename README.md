@@ -1,11 +1,10 @@
 An R interface to the Enrichr database
 ================
 Wajid Jawaid
-2017-04-02
+2019-07-18
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-[![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/enrichR)](https://cran.r-project.org/package=enrichR) [![Project Status: Active - The project has reached a stable, usable state and is being actively developed.](http://www.repostatus.org/badges/latest/active.svg)](http://www.repostatus.org/#active)
-[![CRAN mirror downloads](http://cranlogs.r-pkg.org/badges/enrichR)](https://cran.r-project.org/package=enrichR/)
+[![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/enrichR)](https://cran.r-project.org/package=enrichR) [![Project Status: Active - The project has reached a stable, usable state and is being actively developed.](http://www.repostatus.org/badges/latest/active.svg)](http://www.repostatus.org/#active) [![CRAN mirror downloads](http://cranlogs.r-pkg.org/badges/enrichR)](https://cran.r-project.org/package=enrichR/)
 
 Installation
 ============
@@ -71,16 +70,24 @@ Now view the results table.
 enriched[["GO_Biological_Process_2015"]]
 ```
 
-| Term                                                             | Overlap |   P.value|  Adjusted.P.value|  Old.P.value|  Old.Adjusted.P.value|    Z.score|  Combined.Score| Genes                  |
-|:-----------------------------------------------------------------|:--------|---------:|-----------------:|------------:|---------------------:|----------:|---------------:|:-----------------------|
-| embryonic hemopoiesis (GO\_0035162)                              | 3/24    |  0.00e+00|         0.0000083|     1.00e-07|             0.0000355|  -2.869798|        33.56095| KDR;GATA1;RUNX1        |
-| regulation of erythrocyte differentiation (GO\_0045646)          | 3/36    |  1.00e-07|         0.0000112|     4.00e-07|             0.0000395|  -2.503155|        28.52580| GFI1B;SPI1;GATA1       |
-| regulation of myeloid cell differentiation (GO\_0045637)         | 4/156   |  1.00e-07|         0.0000083|     2.00e-07|             0.0000355|  -2.325462|        27.19519| GFI1B;SPI1;GATA1;RUNX1 |
-| positive regulation of granulocyte differentiation (GO\_0030854) | 2/10    |  3.40e-06|         0.0001522|     9.70e-06|             0.0004382|  -2.728754|        23.98657| GFI1B;RUNX1            |
-| regulation of granulocyte differentiation (GO\_0030852)          | 2/17    |  1.02e-05|         0.0002681|     2.51e-05|             0.0006716|  -2.824466|        23.22908| GFI1B;RUNX1            |
-| granulocyte differentiation (GO\_0030851)                        | 2/15    |  7.90e-06|         0.0002484|     2.00e-05|             0.0006314|  -2.779246|        23.06870| SPI1;GATA1             |
+You can give many genes.
+
+``` r
+data(genes790)
+length(genes790)
+head(enrichr(genes790, c('LINCS_L1000_Chem_Pert_up'))[[1]])
+```
+
+| Term                                                              | Overlap |  P.value|  Adjusted.P.value|  Old.P.value|  Old.Adjusted.P.value|  Odds.Ratio|  Combined.Score| Genes                  |
+|:------------------------------------------------------------------|:--------|--------:|-----------------:|------------:|---------------------:|-----------:|---------------:|:-----------------------|
+| embryonic hemopoiesis (GO\_0035162)                               | 3/24    |  0.0e+00|         0.0001573|            0|                     0|   416.66667|        7213.540| KDR;GATA1;RUNX1        |
+| regulation of myeloid cell differentiation (GO\_0045637)          | 4/156   |  1.0e-07|         0.0001370|            0|                     0|    85.47009|        1432.245| GFI1B;SPI1;GATA1;RUNX1 |
+| regulation of erythrocyte differentiation (GO\_0045646)           | 3/36    |  1.0e-07|         0.0001847|            0|                     0|   277.77778|        4459.220| GFI1B;SPI1;GATA1       |
+| positive regulation of myeloid cell differentiation (GO\_0045639) | 3/74    |  1.0e-06|         0.0012521|            0|                     0|   135.13514|        1871.822| GFI1B;GATA1;RUNX1      |
+| hemopoiesis (GO\_0030097)                                         | 3/95    |  2.1e-06|         0.0021339|            0|                     0|   105.26316|        1378.448| KDR;GATA1;RUNX1        |
+| hematopoietic progenitor cell differentiation (GO\_0002244)       | 3/106   |  2.9e-06|         0.0024754|            0|                     0|    94.33962|        1204.196| SPI1;GATA1;RUNX1       |
 
 References
 ==========
 
-Kuleshov, Maxim V., Matthew R. Jones, Andrew D. Rouillard, Nicolas F. Fernandez, Qiaonan Duan, Zichen Wang, Simon Koplev, et al. 2016. “Enrichr: A Comprehensive Gene Set Enrichment Analysis Web Server 2016 Update.” *Nucleic Acids Res* 44 (Web Server issue): W90–W97. doi:[10.1093/nar/gkw377](https://doi.org/10.1093/nar/gkw377).
+Kuleshov, Maxim V., Matthew R. Jones, Andrew D. Rouillard, Nicolas F. Fernandez, Qiaonan Duan, Zichen Wang, Simon Koplev, et al. 2016. “Enrichr: A Comprehensive Gene Set Enrichment Analysis Web Server 2016 Update.” *Nucleic Acids Res* 44 (Web Server issue): W90–W97. <https://doi.org/10.1093/nar/gkw377>.

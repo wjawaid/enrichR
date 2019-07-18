@@ -3,3 +3,5 @@
 .RData
 inst/doc
 cran-comments.md
+README.md.old
+.DS_Store
