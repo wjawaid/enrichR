@@ -5,3 +5,4 @@
 ^README-.*\.png$
 ^CRAN-RELEASE$
 ^README.md.old$
+^README.html$

@@ -3,7 +3,7 @@ title: "An R interface to the Enrichr database"
 author: "Wajid Jawaid"
 email: "wj241@cam.ac.uk"
 date: "`r Sys.Date()`"
-bibliography: ./vignettes/enrichr.bib
+<!-- bibliography: ./vignettes/enrichr.bib -->
 output: github_document
 ---
 
@@ -87,4 +87,4 @@ kable(x)
 ```
 
 # References
-
+Kuleshov, Maxim V., Matthew R. Jones, Andrew D. Rouillard, Nicolas F. Fernandez, Qiaonan Duan, Zichen Wang, Simon Koplev, et al. 2016. “Enrichr: A Comprehensive Gene Set Enrichment Analysis Web Server 2016 Update.” Nucleic Acids Res 44 (Web Server issue): W90–W97. https://doi.org/10.1093/nar/gkw377.

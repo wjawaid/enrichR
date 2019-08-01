@@ -1,10 +1,24 @@
 ## Author: Wajid Jawaid
-## Date: 18 Julyy 2019
+## Date: 1 August 2019
 ## enrichR package: sends data to http://http://amp.pharm.mssm.edu/Enrichr/ for gene enrichment
 ## in multiple databases.
 
-options(base_address = "http://amp.pharm.mssm.edu/Enrichr/")
-options(enrichRLive = TRUE)
+##' onLoad hook to setup package options
+##'
+##' onLoad hook to setup package options and to check connection to website
+##' @title onLoad hook to setup package options
+##' @param libname Library name
+##' @param pkgname Package name
+##' @return Nil
+##' @author Wajid Jawaid
+.onLoad <- function(libname, pkgname) {
+    options(enrichR.base.address = "http://amp.pharm.mssm.edu/Enrichr/")
+    options(enrichR.live = TRUE)
+    packageStartupMessage("Welcome to enrichR\nChecking connection ... ", appendLF = FALSE)
+    getEnrichr(url=paste0(getOption("enrichR.base.address"), "datasetStatistics"))
+    if (getOption("enrichR.live")) packageStartupMessage("Connection is Live!")
+}
+
 
 ##' Helper function
 ##'
@@ -18,12 +32,12 @@ options(enrichRLive = TRUE)
 getEnrichr <- function(url, ...) {
     tryCatch(
     {
-        options(enrichRLive = TRUE)
+        options(enrichR.live = TRUE)
         x <- GET(url=url, ...)
     },
     error = function(err_msg) {
         message("EnrichR website not responding")
-        options(enrichRLive = FALSE)
+        options(enrichR.live = FALSE)
     },
     finally = function() {
        invisible(x) 
@@ -41,11 +55,10 @@ getEnrichr <- function(url, ...) {
 ##' @importFrom rjson fromJSON
 ##' @export
 listEnrichrDbs <- function() {
-    options(enrichRLive = TRUE)
-    dfSAF <- options()$stringsAsFactors
+    dfSAF <- getOption("stringsAsFactors")
     options(stringsAsFactors = FALSE)
-    dbs <- getEnrichr(url=paste0(getOption("base_address"), "datasetStatistics"))
-    if (!getOption("enrichRLive")) return()
+    dbs <- getEnrichr(url=paste0(getOption("enrichR.base.address"), "datasetStatistics"))
+    if (!getOption("enrichR.live")) return()
     ## if (length(dbs) == 1) {
     ##     if (dbs == "FAIL") {
     ##         return()
@@ -93,33 +106,33 @@ enrichr <- function(genes, databases = NULL) {
         message("No genes have been given")
         return()
     }
-    x_text <- getEnrichr(url = getOption("base_address"))
-    if (!getOption("enrichRLive")) return()
+    x_text <- getEnrichr(url = getOption("enrichR.base.address"))
+    if (!getOption("enrichR.live")) return()
     if (is.null(databases)) {
         message("No databases have been provided")
         return()
     }
     cat("Uploading data to Enrichr... ")
     if (is.vector(genes) & ! all(genes == "") & length(genes) != 0) {
-        temp <- POST(url=paste0(getOption("base_address"), "enrich"),
+        temp <- POST(url=paste0(getOption("enrichR.base.address"), "enrich"),
                      body=list(list=paste(genes, collapse="\n")))
     } else if (is.data.frame(genes)) {
-        temp <- POST(url=paste0(getOption("base_address"), "enrich"),
+        temp <- POST(url=paste0(getOption("enrichR.base.address"), "enrich"),
                      body=list(list=paste(paste(genes[,1], genes[,2], sep=","),
                                           collapse="\n")))
     } else {
         warning("genes must be a non-empty vector of gene names or a dataframe with genes and score.")
     }
-    getEnrichr(url=paste0(getOption("base_address"), "share"))
+    getEnrichr(url=paste0(getOption("enrichR.base.address"), "share"))
     cat("Done.\n")
     dbs <- as.list(databases)
-    dfSAF <- options()$stringsAsFactors
+    dfSAF <- getOption("stringsAsFactors")
     options(stringsAsFactors = FALSE)
     result <- lapply(dbs, function(x) {
         cat("  Querying ", x, "... ", sep="")
-        r <- getEnrichr(url=paste0(getOption("base_address"), "export"),
+        r <- getEnrichr(url=paste0(getOption("enrichR.base.address"), "export"),
                         query=list(file="API", backgroundType=x))
-        if (!getOption("enrichRLive")) return()
+        if (!getOption("enrichR.live")) return()
         r <- gsub("&#39;", "'", intToUtf8(r$content))
         tc <- textConnection(r)
         r <- read.table(tc, sep = "\t", header = TRUE, quote = "", comment.char="")

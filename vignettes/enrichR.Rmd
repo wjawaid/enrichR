@@ -2,10 +2,9 @@
 title: "An R interface to the Enrichr database"
 author: "Wajid Jawaid"
 date: "`r Sys.Date()`"
-bibliography: enrichr.bib
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{An R interface to teh Enrichr database}
+  %\VignetteIndexEntry{An R interface to the Enrichr database}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -76,3 +75,4 @@ if (websiteLive) {
 ```
 
 # References
+Kuleshov, Maxim V., Matthew R. Jones, Andrew D. Rouillard, Nicolas F. Fernandez, Qiaonan Duan, Zichen Wang, Simon Koplev, et al. 2016. “Enrichr: A Comprehensive Gene Set Enrichment Analysis Web Server 2016 Update.” Nucleic Acids Res 44 (Web Server issue): W90–W97. https://doi.org/10.1093/nar/gkw377.
