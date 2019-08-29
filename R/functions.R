@@ -11,7 +11,7 @@
 ##' @param pkgname Package name
 ##' @return Nil
 ##' @author Wajid Jawaid
-.onLoad <- function(libname, pkgname) {
+.onAttach <- function(libname, pkgname) {
     options(enrichR.base.address = "http://amp.pharm.mssm.edu/Enrichr/")
     options(enrichR.live = TRUE)
     packageStartupMessage("Welcome to enrichR\nChecking connection ... ", appendLF = FALSE)
