@@ -167,6 +167,7 @@ enrichr <- function(genes, databases = NULL) {
 ##' @return NULL
 ##' @author Wajid Jawaid \email{wj241@alumni.cam.ac.uk}
 ##' @author I-Hsuan Lin \email{i-hsuan.lin@manchester.ac.uk}
+##' @importFrom utils write.table
 ##' @export
 ##' @examples
 ##' dbs <- listEnrichrDbs()
