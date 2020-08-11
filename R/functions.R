@@ -175,7 +175,7 @@ enrichr <- function(genes, databases = NULL) {
 ##'          "GO_Biological_Process_2018")
 ##' enriched <- enrichr(c("Runx1", "Gfi1", "Gfi1b", "Spi1", "Gata1", "Kdr"), dbs)
 ##' printEnrich(enriched)
-printEnrich <- function (data, prefix = "enrichr", showTerms = NULL, columns = c(1:9)) {
+printEnrich <- function(data, prefix = "enrichr", showTerms = NULL, columns = c(1:9)) {
 
     if(!is.numeric(columns)) {
         stop(paste0("columns '", columns, "' is invalid."))
@@ -199,7 +199,7 @@ printEnrich <- function (data, prefix = "enrichr", showTerms = NULL, columns = c
             df <- df[1:showTerms, columns]
         }
 
-        write.table(df, file = paste0(prefix, "_", dbname, ".txt"), sep = "\t", quote = F, 
-		    row.names = F, col.names = T)
+	filename <- paste0(prefix, "_", dbname, ".txt")
+        write.table(df, file = filename, sep = "\t", quote = F, row.names = F, col.names = T)
     }
 }
