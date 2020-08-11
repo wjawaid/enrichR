@@ -7,15 +7,15 @@
 ##'
 ##' onLoad hook to setup package options and to check connection to website
 ##' @title onLoad hook to setup package options
-##' @param libname Library name
-##' @param pkgname Package name
-##' @return Nil
-##' @author Wajid Jawaid
+##' @param libname (Required). Library name
+##' @param pkgname (Required). Package name
+##' @return NULL
+##' @author Wajid Jawaid \email{wj241@alumni.cam.ac.uk}
 .onAttach <- function(libname, pkgname) {
     options(enrichR.base.address = "http://amp.pharm.mssm.edu/Enrichr/")
     options(enrichR.live = TRUE)
     packageStartupMessage("Welcome to enrichR\nChecking connection ... ", appendLF = FALSE)
-    getEnrichr(url=paste0(getOption("enrichR.base.address"), "datasetStatistics"))
+    getEnrichr(url = paste0(getOption("enrichR.base.address"), "datasetStatistics"))
     if (getOption("enrichR.live")) packageStartupMessage("Connection is Live!")
 }
 
@@ -24,14 +24,13 @@
 ##'
 ##' Helper function for GET
 ##' @title Helper function for GET
-##' @param url url address requested
-##' @param ... Additional parameters to pass to GET
+##' @param url (Required). URL address requested
+##' @param ... (Optional). Additional parameters to pass to GET
 ##' @return same as GET
-##' @author Wajid Jawaid
+##' @author Wajid Jawaid \email{wj241@alumni.cam.ac.uk}
 ##' @importFrom httr GET
 getEnrichr <- function(url, ...) {
-    tryCatch(
-    {
+    tryCatch({
         options(enrichR.live = TRUE)
         x <- GET(url=url, ...)
     },
@@ -41,23 +40,24 @@ getEnrichr <- function(url, ...) {
     },
     finally = function() {
        invisible(x) 
-    }
-    )
+    })
 }
 
 ##' Look up available databases on Enrichr
 ##'
 ##' Look up available databases on Enrichr
 ##' @title Look up available databases on Enrichr
-##' @return dataframe of available Enrichr databases
-##' @author Wajid Jawaid
+##' @return A data.frame of available Enrichr databases
+##' @author Wajid Jawaid \email{wj241@alumni.cam.ac.uk}
 ##' @importFrom httr GET POST
 ##' @importFrom rjson fromJSON
 ##' @export
+##' @examples
+##' dbs <- listEnrichrDbs()
 listEnrichrDbs <- function() {
     dfSAF <- getOption("stringsAsFactors")
     options(stringsAsFactors = FALSE)
-    dbs <- getEnrichr(url=paste0(getOption("enrichR.base.address"), "datasetStatistics"))
+    dbs <- getEnrichr(url = paste0(getOption("enrichR.base.address"), "datasetStatistics"))
     if (!getOption("enrichR.live")) return()
     ## if (length(dbs) == 1) {
     ##     if (dbs == "FAIL") {
@@ -77,16 +77,21 @@ listEnrichrDbs <- function() {
 ##'
 ##' Gene enrichment using Enrichr
 ##' @title Gene enrichment using Enrichr
-##' @param genes Character vector of gene names or dataframe of gene names in
+##' @param genes (Required). Character vector of gene names or data.frame of gene names in
 ##' in first column and a score between 0 and 1 in the other.
-##' @param databases Character vector of databases to search.
+##' @param databases (Required). Character vector of databases to search.
 ##' See http://amp.pharm.mssm.edu/Enrichr/ for available databases.
-##' @return Returns a data frame of enrichment terms, p-values, ...
-##' @author Wajid Jawaid
+##' @return Returns a list of data.frame of enrichment terms, p-values, ...
+##' @author Wajid Jawaid \email{wj241@alumni.cam.ac.uk}
 ##' @importFrom httr GET POST
 ##' @importFrom rjson fromJSON
 ##' @importFrom utils read.table
 ##' @export
+##' @examples
+##' dbs <- listEnrichrDbs()
+##' dbs <- c("GO_Molecular_Function_2018", "GO_Cellular_Component_2018", 
+##'          "GO_Biological_Process_2018")
+##' enriched <- enrichr(c("Runx1", "Gfi1", "Gfi1b", "Spi1", "Gata1", "Kdr"), dbs)
 enrichr <- function(genes, databases = NULL) {
     ## if (is.null(databases)) {
     ##     dbs <- c("ChEA 2015", "Epigenomics Roadmap HM ChIP-seq",
@@ -121,7 +126,7 @@ enrichr <- function(genes, databases = NULL) {
                      body=list(list=paste(paste(genes[,1], genes[,2], sep=","),
                                           collapse="\n")))
     } else {
-        warning("genes must be a non-empty vector of gene names or a dataframe with genes and score.")
+        warning("genes must be a non-empty vector of gene names or a data.frame with genes and score.")
     }
     getEnrichr(url=paste0(getOption("enrichR.base.address"), "share"))
     cat("Done.\n")
@@ -151,27 +156,49 @@ enrichr <- function(genes, databases = NULL) {
 ##'
 ##' Print Enrichr output to text file.
 ##' @title Print Enrichr output to text file.
-##' @param data Output from Enrichr function.
-##' @param file Name of output file.
-##' @param sep Default TAB. How to separate fields.
-##' @param columns Columns from each entry of data.
-##' 1-"Index", 2-"Name", 3-"Adjusted_P-value", 4-"Z-score"
-##' 5-"Combined_Score", 6-"Genes", 7-"Overlap_P-value"
-##' @return Produces file.
-##' @author Wajid Jawaid
+##' @param data (Required). Output from Enrichr function.
+##' @param prefix (Optional). Prefix of output file. Default is \code{"enrichr"}.
+##' @param showTerms (Optional). Number of terms to show. 
+##' Default is \code{NULL} to print all terms.
+##' @param columns (Optional). Columns from each entry of data. 
+##' Default is \code{c(1:9)} to print all columns.
+##' 1-"Term", 2-"Overlap", 3-"P.value", 4-"Adjusted.P.value" 5-"Old.P.value", 
+##' 6-"Old.Adjusted.P.value" 7-"Odds.Ratio" 8-"Combined.Score" 9-"Combined.Score"
+##' @return NULL
+##' @author Wajid Jawaid \email{wj241@alumni.cam.ac.uk}
+##' @author I-Hsuan Lin \email{i-hsuan.lin@manchester.ac.uk}
 ##' @export
-printEnrich <- function (data, file, sep = "\t", columns = c(2,3,6)) {
-    enrich <- file(file, "w")
-    for (i in 1:length(data)) {
-        writeLines(names(data)[i], enrich)
-        n <- nrow(data[[i]])
-        if (n > 10) n <- 10
-        if (n > 0) {
-            writeLines(paste(apply(data[[i]][1:n, columns, drop=FALSE], 1,
-                                   function(x) paste(x, collapse = sep)),
-                             collapse = "\n"), enrich)
-        writeLines("\n", enrich)
-        }
+##' @examples
+##' dbs <- listEnrichrDbs()
+##' dbs <- c("GO_Molecular_Function_2018", "GO_Cellular_Component_2018", 
+##'          "GO_Biological_Process_2018")
+##' enriched <- enrichr(c("Runx1", "Gfi1", "Gfi1b", "Spi1", "Gata1", "Kdr"), dbs)
+##' printEnrich(enriched)
+printEnrich <- function (data, prefix = "enrichr", showTerms = NULL, columns = c(1:9)) {
+
+    if(!is.numeric(columns)) {
+        stop(paste0("columns '", columns, "' is invalid."))
     }
-    close(enrich)
+
+    if(!is.null(showTerms) & !is.numeric(showTerms)) {
+        stop(paste0("showTerms '", showTerms, "' is invalid."))
+    }
+
+    for (i in 1:length(data)) {
+        dbname <- names(data)[i]
+        df <- data[[i]]
+
+        if(any(columns > ncol(df))) {
+            stop("Undefined columns selected")
+        }
+
+        if(is.null(showTerms)) {
+            df <- df[, columns]
+        } else if(showTerms <= nrow(df)) {
+            df <- df[1:showTerms, columns]
+        }
+
+        write.table(df, file = paste0(prefix, "_", dbname, ".txt"), sep = "\t", quote = F, 
+		    row.names = F, col.names = T)
+    }
 }
