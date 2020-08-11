@@ -7,12 +7,9 @@
 .onAttach(libname, pkgname)
 }
 \arguments{
-\item{libname}{Library name}
+\item{libname}{(Required). Library name}
 
-\item{pkgname}{Package name}
-}
-\value{
-Nil
+\item{pkgname}{(Required). Package name}
 }
 \description{
 onLoad hook to setup package options
@@ -21,5 +18,5 @@ onLoad hook to setup package options
 onLoad hook to setup package options and to check connection to website
 }
 \author{
-Wajid Jawaid
+Wajid Jawaid \email{wj241@alumni.cam.ac.uk}
 }
