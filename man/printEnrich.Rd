@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions.R
 \name{printEnrich}
 \alias{printEnrich}
-\title{Print Enrichr output to text file.}
+\title{printEnrich}
 \usage{
 printEnrich(data, prefix = "enrichr", showTerms = NULL, columns = c(1:9))
 }
