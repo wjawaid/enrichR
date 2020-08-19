@@ -230,3 +230,119 @@ printEnrich <- function(data, prefix = "enrichr", showTerms = NULL, columns = c(
     }
 }
 
+##' Visualise a Enrichr output as barplot
+##'
+##' Print Enrichr output to text file.
+##' @title plotEnrich
+##' @param df (Required). A single data.frame from a list of Enrichr output.
+##' @param showTerms (Optional). Number of terms to show. Default is \code{20}.
+##' @param numChar (Optional). A single integer. Default is \code{40}.
+##' Indicates the number characters to keep in the term description.
+##' @param y (Optional). A character string. Default is \code{"Count"}.
+##' Indicates the variable that should be mapped to the y-axis.
+##' It can be either \code{"Count"} or \code{"Ratio"}.
+##' @param orderBy (Optional). A character string. Default is \code{"P.value"}.
+##' Indicates how to order the Enrichr results before subsetting to keep top \code{N} terms.
+##' It can be either \code{"P.value"} or \code{"Combined.Score"}.
+##' @param xlab (Optional). A character string. Default is \code{NULL}.
+##' Indicates the x-axis label.
+##' @param ylab (Optional). A character string. Default is \code{NULL}.
+##' Indicates the y-axis label.
+##' @param title (Optional). A character string. Default is \code{NULL}
+##' Indicates the main title for the graphic.
+##' @return A \code{\link{ggplot}}2 plot object
+##' @author I-Hsuan Lin \email{i-hsuan.lin@manchester.ac.uk}
+##' @seealso
+##' \code{\link[ggplot2]{ggplot}}
+##' @importFrom ggplot2 ggplot
+##' @importFrom ggplot2 aes_string
+##' @importFrom ggplot2 geom_bar
+##' @importFrom ggplot2 coord_flip
+##' @importFrom ggplot2 theme_bw
+##' @importFrom ggplot2 scale_fill_continuous
+##' @importFrom ggplot2 guides
+##' @importFrom ggplot2 guide_colorbar
+##' @importFrom ggplot2 theme
+##' @importFrom ggplot2 element_text
+##' @importFrom ggplot2 margin
+##' @importFrom ggplot2 xlab
+##' @importFrom ggplot2 ylab
+##' @importFrom ggplot2 ggtitle
+##' @export
+##' @examples
+##' dbs <- listEnrichrDbs()
+##' dbs <- c("GO_Molecular_Function_2018", "GO_Cellular_Component_2018", 
+##'          "GO_Biological_Process_2018")
+##' enriched <- enrichr(c("Runx1", "Gfi1", "Gfi1b", "Spi1", "Gata1", "Kdr"), dbs)
+##' # Plot top 20 GO-BP results ordered by P-value
+##' plotEnrich(enriched[[3]], showTerms = 20, numChar = 50, y = "Count", orderBy = "P.value")
+plotEnrich <- function(df, showTerms = 20, numChar = 40, y = "Count", orderBy = "P.value",
+                       xlab = NULL, ylab = NULL, title = NULL) {
+
+    if(!is.numeric(numChar)) {
+        stop(paste0("numChar '", numChar, "' is invalid."))
+    }
+
+    df <- .enrichment_prep_df(df, showTerms, orderBy)
+
+    # Create trimmed name (as seen in topGO)
+    shortName <- paste(substr(df$Term, 1, numChar),
+                       ifelse(nchar(df$Term) > numChar, '...', ''), sep = '')
+    df$shortName = shortName
+    df$shortName <- factor(df$shortName, levels = rev(unique(df$shortName)))
+    df$Ratio <- df$Significant/df$Annotated
+
+    # Define fill variable (P.value or Combined.Score)
+    if(orderBy == "Combined.Score") {
+        fill <- "Combined.Score"
+    } else {
+        fill <- "P.value"
+    }
+
+    # Define y variable (Count or Ratio)
+    if(y != "Ratio") {
+        y <- "Significant"
+    }
+
+    # Define variable mapping
+    map <- aes_string(x = "shortName", y = y, fill = fill)
+
+    # Define labels
+    if(is.null(xlab)) {
+        xlab <- "Enriched terms"
+    }
+
+    if(is.null(ylab)) {
+        if(y == "Ratio") {
+            ylab <- "Gene ratio"
+        } else {
+            ylab <- "Gene count"
+        }
+    }
+
+    if(is.null(title)) {
+        title <- "Enrichment analysis by Enrichr"
+    }
+
+    # Make the ggplot
+    p <- ggplot(df, map) + geom_bar(stat = "identity") + coord_flip() + theme_bw()
+
+    if(orderBy == "Combined.Score") {
+        p <- p + scale_fill_continuous(low = "blue", high = "red") +
+                guides(fill = guide_colorbar(title = "Combined Score", reverse = FALSE))
+    } else {
+        p <- p + scale_fill_continuous(low = "red", high = "blue") +
+                guides(fill = guide_colorbar(title = "P value", reverse = TRUE))
+    }
+
+    # Adjust theme components
+    p <- p + theme(axis.text.x = element_text(colour = "black", vjust = 1),
+                   axis.text.y = element_text(colour = "black", hjust = 1),
+                   axis.title = element_text(color = "black", margin = margin(10, 5, 0, 0)),
+                   axis.title.y = element_text(angle = 90))
+
+    p <- p + xlab(xlab) + ylab(ylab) + ggtitle(title)
+
+    return(p)
+}
+

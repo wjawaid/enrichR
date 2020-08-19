@@ -74,10 +74,16 @@ if (websiteLive) {
 }
 ```
 
-Print Enrichr output to text file
+Print Enrichr output to text file.
 
 ```{r, echo = TRUE, eval = FALSE}
 printEnrich(enriched)
+```
+
+Plot Enrichr GO-BP output.
+
+```{r, echo = TRUE, eval = TRUE, fig.width = 8, fig.height = 6, fig.align = "center", dpi = 100}
+plotEnrich(enriched[[3]], showTerms = 20, numChar = 40, y = "Count", orderBy = "P.value")
 ```
 
 # References
