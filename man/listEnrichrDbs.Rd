@@ -7,7 +7,7 @@
 listEnrichrDbs()
 }
 \value{
-dataframe of available Enrichr databases
+A data.frame of available Enrichr databases
 }
 \description{
 Look up available databases on Enrichr
@@ -15,6 +15,9 @@ Look up available databases on Enrichr
 \details{
 Look up available databases on Enrichr
 }
+\examples{
+dbs <- listEnrichrDbs()
+}
 \author{
-Wajid Jawaid
+Wajid Jawaid \email{wj241@alumni.cam.ac.uk}
 }

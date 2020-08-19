@@ -4,7 +4,9 @@
 \name{genes790}
 \alias{genes790}
 \title{790 gene symbols}
-\format{A vector.}
+\format{
+A vector.
+}
 \usage{
 genes790
 }
