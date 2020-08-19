@@ -152,10 +152,42 @@ enrichr <- function(genes, databases = NULL) {
     return(result)
 }
 
+## Given a Enrichr output, order and subset criteria, returns a data frame accordingly
+.enrichment_prep_df <- function(df, showTerms, orderBy) {
+
+    if(is.null(showTerms)) {
+        showTerms = nrow(df)
+    } else if(!is.numeric(showTerms)) {
+        stop(paste0("showTerms '", showTerms, "' is invalid."))
+    }
+
+    Annotated <- as.numeric(sub("^\\d+/", "", as.character(df$Overlap)))
+    Significant <- as.numeric(sub("/\\d+$", "", as.character(df$Overlap)))
+
+    # Build data frame
+    df <- cbind(df, data.frame(Annotated = Annotated, Significant = Significant,
+                               stringsAsFactors = FALSE))
+
+    # Order data frame (P.value or Combined.Score)
+    if(orderBy == "Combined.Score") {
+        idx <- order(df$Combined.Score, decreasing = TRUE)
+    } else {
+        idx <- order(df$P.value, decreasing = FALSE)
+    }
+    df <- df[idx,]
+
+    # Subset to selected number of terms
+    if(showTerms <= nrow(df)) {
+        df <- df[1:showTerms,]
+    }
+
+    return(df)
+}
+
 ##' Print Enrichr output.
 ##'
 ##' Print Enrichr output to text file.
-##' @title Print Enrichr output to text file.
+##' @title printEnrich
 ##' @param data (Required). Output from Enrichr function.
 ##' @param prefix (Optional). Prefix of output file. Default is \code{"enrichr"}.
 ##' @param showTerms (Optional). Number of terms to show. 
@@ -175,31 +207,26 @@ enrichr <- function(genes, databases = NULL) {
 ##'          "GO_Biological_Process_2018")
 ##' enriched <- enrichr(c("Runx1", "Gfi1", "Gfi1b", "Spi1", "Gata1", "Kdr"), dbs)
 ##' printEnrich(enriched)
+
 printEnrich <- function(data, prefix = "enrichr", showTerms = NULL, columns = c(1:9)) {
 
     if(!is.numeric(columns)) {
         stop(paste0("columns '", columns, "' is invalid."))
     }
 
-    if(!is.null(showTerms) & !is.numeric(showTerms)) {
-        stop(paste0("showTerms '", showTerms, "' is invalid."))
-    }
-
     for (i in 1:length(data)) {
         dbname <- names(data)[i]
         df <- data[[i]]
+
+    df <- .enrichment_prep_df(df, showTerms, orderBy = "P.value")
+    df <- df[, !colnames(df) %in% c("Annotated", "Significant")]
 
         if(any(columns > ncol(df))) {
             stop("Undefined columns selected")
         }
 
-        if(is.null(showTerms)) {
-            df <- df[, columns]
-        } else if(showTerms <= nrow(df)) {
-            df <- df[1:showTerms, columns]
-        }
-
-	filename <- paste0(prefix, "_", dbname, ".txt")
-        write.table(df, file = filename, sep = "\t", quote = F, row.names = F, col.names = T)
+    filename <- paste0(prefix, "_", dbname, ".txt")
+    write.table(df, file = filename, sep = "\t", quote = F, row.names = F, col.names = T)
     }
 }
+
