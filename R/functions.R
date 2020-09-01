@@ -63,6 +63,34 @@ listEnrichrSites <- function(...) {
     }
 }
 
+##' Set Enrichr Website
+##'
+##' Set Enrichr Website
+##' @title Set Enrichr Website
+##' @param site site requested
+##' @return Changes Enrichr Website connection
+##' @author Alexander Blume
+setEnrichrSite <- function(site) {
+    site <- gsub(getOption("enrichR.sites.base.address"), "", site)
+    matched <- grep(paste0("^",site), 
+                    getOption("enrichR.sites"),
+                    ignore.case = TRUE,value = FALSE)
+    if( length(matched) == 0 ) {
+        message("Given website does not match available sites: ", site)
+        message("Choose from:\n",
+                paste("-",getOption("enrichR.sites"),"\n"))
+    } else if (length(matched) > 1) {
+        message("Given website matches multiple options: ", site)
+        message(paste("-", getOption("enrichR.sites")[matched],"\n"),)        
+    } else {
+        site <- getOption("enrichR.sites")[matched]
+        options(enrichR.base.address = paste0(getOption("enrichR.sites.base.address"),site,"/"))
+        message("Connection changed to ",paste0(getOption("enrichR.sites.base.address"),site,"/"))
+        getEnrichr(url = paste0(getOption("enrichR.base.address"),"datasetStatistics"))
+        if (getOption("enrichR.live")) message("Connection is Live!")
+    }
+}
+
 ##' Look up available databases on Enrichr
 ##'
 ##' Look up available databases on Enrichr
