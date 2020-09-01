@@ -14,9 +14,17 @@
 .onAttach <- function(libname, pkgname) {
     options(enrichR.base.address = "http://amp.pharm.mssm.edu/Enrichr/")
     options(enrichR.live = TRUE)
-    packageStartupMessage("Welcome to enrichR\nChecking connection ... ", appendLF = FALSE)
-    getEnrichr(url=paste0(getOption("enrichR.base.address"), "datasetStatistics"))
-    if (getOption("enrichR.live")) packageStartupMessage("Connection is Live!")
+    packageStartupMessage("Welcome to enrichR\nChecking connection ... ", appendLF = TRUE)
+    options(modEnrichR.use = TRUE)
+    options(enrichR.sites.base.address = "http://amp.pharm.mssm.edu/")
+    options(enrichR.sites = c("Enrichr", "FlyEnrichr", "WormEnrichr", "YeastEnrichr", "FishEnrichr"))
+    if (getOption("modEnrichR.use")) {
+        listEnrichrSites()
+    } else {
+        getEnrichr(url=paste0(getOption("enrichR.base.address"), "datasetStatistics"))
+        packageStartupMessage("Enrichr ... ", appendLF = FALSE)
+        if (getOption("enrichR.live")) packageStartupMessage("Connection is Live!")
+    }
 }
 
 
