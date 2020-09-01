@@ -45,6 +45,24 @@ getEnrichr <- function(url, ...) {
     )
 }
 
+##' List modEnrichr Websites
+##'
+##' List Enrichr Websites
+##' @title List Enrichr Websites
+##' @return print Enrichr Website status
+##' @author Alexander Blume
+listEnrichrSites <- function(...) {
+    for (site in getOption("enrichR.sites")) {
+        getEnrichr(url = paste0(getOption("enrichR.sites.base.address"), site, "/", "datasetStatistics"))
+        packageStartupMessage(paste0(site, " ... "), appendLF = FALSE)
+        if (paste0(getOption("enrichR.sites.base.address"), site, "/")  == getOption("enrichR.base.address")) {
+            if (getOption("enrichR.live")) packageStartupMessage("Connection is Live!")
+        } else 
+            if (getOption("enrichR.live")) packageStartupMessage("Connection is available!")
+        
+    }
+}
+
 ##' Look up available databases on Enrichr
 ##'
 ##' Look up available databases on Enrichr
