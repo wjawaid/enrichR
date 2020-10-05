@@ -14,9 +14,17 @@
 .onAttach <- function(libname, pkgname) {
     options(enrichR.base.address = "http://amp.pharm.mssm.edu/Enrichr/")
     options(enrichR.live = TRUE)
-    packageStartupMessage("Welcome to enrichR\nChecking connection ... ", appendLF = FALSE)
-    getEnrichr(url = paste0(getOption("enrichR.base.address"), "datasetStatistics"))
-    if (getOption("enrichR.live")) packageStartupMessage("Connection is Live!")
+    packageStartupMessage("Welcome to enrichR\nChecking connection ... ", appendLF = TRUE)
+    options(modEnrichR.use = TRUE)
+    options(enrichR.sites.base.address = "http://amp.pharm.mssm.edu/")
+    options(enrichR.sites = c("Enrichr", "FlyEnrichr", "WormEnrichr", "YeastEnrichr", "FishEnrichr"))
+    if (getOption("modEnrichR.use")) {
+        listEnrichrSites()
+    } else {
+        getEnrichr(url=paste0(getOption("enrichR.base.address"), "datasetStatistics"))
+        packageStartupMessage("Enrichr ... ", appendLF = FALSE)
+        if (getOption("enrichR.live")) packageStartupMessage("Connection is Live!")
+    }
 }
 
 
@@ -41,6 +49,52 @@ getEnrichr <- function(url, ...) {
     finally = function() {
        invisible(x) 
     })
+}
+
+##' List modEnrichr Websites
+##'
+##' List Enrichr Websites
+##' @title List Enrichr Websites
+##' @return print Enrichr Website status
+##' @author Alexander Blume
+listEnrichrSites <- function(...) {
+    for (site in getOption("enrichR.sites")) {
+        getEnrichr(url = paste0(getOption("enrichR.sites.base.address"), site, "/", "datasetStatistics"))
+        packageStartupMessage(paste0(site, " ... "), appendLF = FALSE)
+        if (paste0(getOption("enrichR.sites.base.address"), site, "/")  == getOption("enrichR.base.address")) {
+            if (getOption("enrichR.live")) packageStartupMessage("Connection is Live!")
+        } else 
+            if (getOption("enrichR.live")) packageStartupMessage("Connection is available!")
+        
+    }
+}
+
+##' Set Enrichr Website
+##'
+##' Set Enrichr Website
+##' @title Set Enrichr Website
+##' @param site site requested
+##' @return Changes Enrichr Website connection
+##' @author Alexander Blume
+setEnrichrSite <- function(site) {
+    site <- gsub(getOption("enrichR.sites.base.address"), "", site)
+    matched <- grep(paste0("^",site), 
+                    getOption("enrichR.sites"),
+                    ignore.case = TRUE,value = FALSE)
+    if( length(matched) == 0 ) {
+        message("Given website does not match available sites: ", site)
+        message("Choose from:\n",
+                paste("-",getOption("enrichR.sites"),"\n"))
+    } else if (length(matched) > 1) {
+        message("Given website matches multiple options: ", site)
+        message(paste("-", getOption("enrichR.sites")[matched],"\n"),)        
+    } else {
+        site <- getOption("enrichR.sites")[matched]
+        options(enrichR.base.address = paste0(getOption("enrichR.sites.base.address"),site,"/"))
+        message("Connection changed to ",paste0(getOption("enrichR.sites.base.address"),site,"/"))
+        getEnrichr(url = paste0(getOption("enrichR.base.address"),"datasetStatistics"))
+        if (getOption("enrichR.live")) message("Connection is Live!")
+    }
 }
 
 ##' Look up available databases on Enrichr
