@@ -7,9 +7,9 @@
 getEnrichr(url, ...)
 }
 \arguments{
-\item{url}{url address requested}
+\item{url}{(Required). URL address requested}
 
-\item{...}{Additional parameters to pass to GET}
+\item{...}{(Optional). Additional parameters to pass to GET}
 }
 \value{
 same as GET
@@ -21,5 +21,5 @@ Helper function
 Helper function for GET
 }
 \author{
-Wajid Jawaid
+Wajid Jawaid \email{wj241@alumni.cam.ac.uk}
 }

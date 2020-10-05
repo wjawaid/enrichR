@@ -7,10 +7,10 @@
 ##'
 ##' onLoad hook to setup package options and to check connection to website
 ##' @title onLoad hook to setup package options
-##' @param libname Library name
-##' @param pkgname Package name
-##' @return Nil
-##' @author Wajid Jawaid
+##' @param libname (Required). Library name
+##' @param pkgname (Required). Package name
+##' @return NULL
+##' @author Wajid Jawaid \email{wj241@alumni.cam.ac.uk}
 .onAttach <- function(libname, pkgname) {
     options(enrichR.base.address = "http://amp.pharm.mssm.edu/Enrichr/")
     options(enrichR.live = TRUE)
@@ -32,14 +32,13 @@
 ##'
 ##' Helper function for GET
 ##' @title Helper function for GET
-##' @param url url address requested
-##' @param ... Additional parameters to pass to GET
+##' @param url (Required). URL address requested
+##' @param ... (Optional). Additional parameters to pass to GET
 ##' @return same as GET
-##' @author Wajid Jawaid
+##' @author Wajid Jawaid \email{wj241@alumni.cam.ac.uk}
 ##' @importFrom httr GET
 getEnrichr <- function(url, ...) {
-    tryCatch(
-    {
+    tryCatch({
         options(enrichR.live = TRUE)
         x <- GET(url=url, ...)
     },
@@ -49,8 +48,7 @@ getEnrichr <- function(url, ...) {
     },
     finally = function() {
        invisible(x) 
-    }
-    )
+    })
 }
 
 ##' List modEnrichr Websites
@@ -103,15 +101,17 @@ setEnrichrSite <- function(site) {
 ##'
 ##' Look up available databases on Enrichr
 ##' @title Look up available databases on Enrichr
-##' @return dataframe of available Enrichr databases
-##' @author Wajid Jawaid
+##' @return A data.frame of available Enrichr databases
+##' @author Wajid Jawaid \email{wj241@alumni.cam.ac.uk}
 ##' @importFrom httr GET POST
 ##' @importFrom rjson fromJSON
 ##' @export
+##' @examples
+##' dbs <- listEnrichrDbs()
 listEnrichrDbs <- function() {
     dfSAF <- getOption("stringsAsFactors")
     options(stringsAsFactors = FALSE)
-    dbs <- getEnrichr(url=paste0(getOption("enrichR.base.address"), "datasetStatistics"))
+    dbs <- getEnrichr(url = paste0(getOption("enrichR.base.address"), "datasetStatistics"))
     if (!getOption("enrichR.live")) return()
     ## if (length(dbs) == 1) {
     ##     if (dbs == "FAIL") {
@@ -131,16 +131,21 @@ listEnrichrDbs <- function() {
 ##'
 ##' Gene enrichment using Enrichr
 ##' @title Gene enrichment using Enrichr
-##' @param genes Character vector of gene names or dataframe of gene names in
+##' @param genes (Required). Character vector of gene names or data.frame of gene names in
 ##' in first column and a score between 0 and 1 in the other.
-##' @param databases Character vector of databases to search.
+##' @param databases (Required). Character vector of databases to search.
 ##' See http://amp.pharm.mssm.edu/Enrichr/ for available databases.
-##' @return Returns a data frame of enrichment terms, p-values, ...
-##' @author Wajid Jawaid
+##' @return Returns a list of data.frame of enrichment terms, p-values, ...
+##' @author Wajid Jawaid \email{wj241@alumni.cam.ac.uk}
 ##' @importFrom httr GET POST
 ##' @importFrom rjson fromJSON
 ##' @importFrom utils read.table
 ##' @export
+##' @examples
+##' dbs <- listEnrichrDbs()
+##' dbs <- c("GO_Molecular_Function_2018", "GO_Cellular_Component_2018", 
+##'          "GO_Biological_Process_2018")
+##' enriched <- enrichr(c("Runx1", "Gfi1", "Gfi1b", "Spi1", "Gata1", "Kdr"), dbs)
 enrichr <- function(genes, databases = NULL) {
     ## if (is.null(databases)) {
     ##     dbs <- c("ChEA 2015", "Epigenomics Roadmap HM ChIP-seq",
@@ -175,7 +180,7 @@ enrichr <- function(genes, databases = NULL) {
                      body=list(list=paste(paste(genes[,1], genes[,2], sep=","),
                                           collapse="\n")))
     } else {
-        warning("genes must be a non-empty vector of gene names or a dataframe with genes and score.")
+        warning("genes must be a non-empty vector of gene names or a data.frame with genes and score.")
     }
     getEnrichr(url=paste0(getOption("enrichR.base.address"), "share"))
     cat("Done.\n")
@@ -201,31 +206,197 @@ enrichr <- function(genes, databases = NULL) {
     return(result)
 }
 
+## Given a Enrichr output, order and subset criteria, returns a data frame accordingly
+.enrichment_prep_df <- function(df, showTerms, orderBy) {
+
+    if(is.null(showTerms)) {
+        showTerms = nrow(df)
+    } else if(!is.numeric(showTerms)) {
+        stop(paste0("showTerms '", showTerms, "' is invalid."))
+    }
+
+    Annotated <- as.numeric(sub("^\\d+/", "", as.character(df$Overlap)))
+    Significant <- as.numeric(sub("/\\d+$", "", as.character(df$Overlap)))
+
+    # Build data frame
+    df <- cbind(df, data.frame(Annotated = Annotated, Significant = Significant,
+                               stringsAsFactors = FALSE))
+
+    # Order data frame (P.value or Combined.Score)
+    if(orderBy == "Combined.Score") {
+        idx <- order(df$Combined.Score, decreasing = TRUE)
+    } else {
+        idx <- order(df$P.value, decreasing = FALSE)
+    }
+    df <- df[idx,]
+
+    # Subset to selected number of terms
+    if(showTerms <= nrow(df)) {
+        df <- df[1:showTerms,]
+    }
+
+    return(df)
+}
+
 ##' Print Enrichr output.
 ##'
 ##' Print Enrichr output to text file.
-##' @title Print Enrichr output to text file.
-##' @param data Output from Enrichr function.
-##' @param file Name of output file.
-##' @param sep Default TAB. How to separate fields.
-##' @param columns Columns from each entry of data.
-##' 1-"Index", 2-"Name", 3-"Adjusted_P-value", 4-"Z-score"
-##' 5-"Combined_Score", 6-"Genes", 7-"Overlap_P-value"
-##' @return Produces file.
-##' @author Wajid Jawaid
+##' @title printEnrich
+##' @param data (Required). Output from Enrichr function.
+##' @param prefix (Optional). Prefix of output file. Default is \code{"enrichr"}.
+##' @param showTerms (Optional). Number of terms to show. 
+##' Default is \code{NULL} to print all terms.
+##' @param columns (Optional). Columns from each entry of data. 
+##' Default is \code{c(1:9)} to print all columns.
+##' 1-"Term", 2-"Overlap", 3-"P.value", 4-"Adjusted.P.value" 5-"Old.P.value", 
+##' 6-"Old.Adjusted.P.value" 7-"Odds.Ratio" 8-"Combined.Score" 9-"Combined.Score"
+##' @return NULL
+##' @author Wajid Jawaid \email{wj241@alumni.cam.ac.uk}
+##' @author I-Hsuan Lin \email{i-hsuan.lin@manchester.ac.uk}
+##' @importFrom utils write.table
 ##' @export
-printEnrich <- function (data, file, sep = "\t", columns = c(2,3,6)) {
-    enrich <- file(file, "w")
+##' @examples
+##' dbs <- listEnrichrDbs()
+##' dbs <- c("GO_Molecular_Function_2018", "GO_Cellular_Component_2018", 
+##'          "GO_Biological_Process_2018")
+##' enriched <- enrichr(c("Runx1", "Gfi1", "Gfi1b", "Spi1", "Gata1", "Kdr"), dbs)
+##' printEnrich(enriched)
+
+printEnrich <- function(data, prefix = "enrichr", showTerms = NULL, columns = c(1:9)) {
+
+    if(!is.numeric(columns)) {
+        stop(paste0("columns '", columns, "' is invalid."))
+    }
+
     for (i in 1:length(data)) {
-        writeLines(names(data)[i], enrich)
-        n <- nrow(data[[i]])
-        if (n > 10) n <- 10
-        if (n > 0) {
-            writeLines(paste(apply(data[[i]][1:n, columns, drop=FALSE], 1,
-                                   function(x) paste(x, collapse = sep)),
-                             collapse = "\n"), enrich)
-        writeLines("\n", enrich)
+        dbname <- names(data)[i]
+        df <- data[[i]]
+
+    df <- .enrichment_prep_df(df, showTerms, orderBy = "P.value")
+    df <- df[, !colnames(df) %in% c("Annotated", "Significant")]
+
+        if(any(columns > ncol(df))) {
+            stop("Undefined columns selected")
+        }
+
+    filename <- paste0(prefix, "_", dbname, ".txt")
+    write.table(df, file = filename, sep = "\t", quote = F, row.names = F, col.names = T)
+    }
+}
+
+##' Visualise a Enrichr output as barplot
+##'
+##' Print Enrichr output to text file.
+##' @title plotEnrich
+##' @param df (Required). A single data.frame from a list of Enrichr output.
+##' @param showTerms (Optional). Number of terms to show. Default is \code{20}.
+##' @param numChar (Optional). A single integer. Default is \code{40}.
+##' Indicates the number characters to keep in the term description.
+##' @param y (Optional). A character string. Default is \code{"Count"}.
+##' Indicates the variable that should be mapped to the y-axis.
+##' It can be either \code{"Count"} or \code{"Ratio"}.
+##' @param orderBy (Optional). A character string. Default is \code{"P.value"}.
+##' Indicates how to order the Enrichr results before subsetting to keep top \code{N} terms.
+##' It can be either \code{"P.value"} or \code{"Combined.Score"}.
+##' @param xlab (Optional). A character string. Default is \code{NULL}.
+##' Indicates the x-axis label.
+##' @param ylab (Optional). A character string. Default is \code{NULL}.
+##' Indicates the y-axis label.
+##' @param title (Optional). A character string. Default is \code{NULL}
+##' Indicates the main title for the graphic.
+##' @return A \code{\link{ggplot}}2 plot object
+##' @author I-Hsuan Lin \email{i-hsuan.lin@manchester.ac.uk}
+##' @seealso
+##' \code{\link[ggplot2]{ggplot}}
+##' @importFrom ggplot2 ggplot
+##' @importFrom ggplot2 aes_string
+##' @importFrom ggplot2 geom_bar
+##' @importFrom ggplot2 coord_flip
+##' @importFrom ggplot2 theme_bw
+##' @importFrom ggplot2 scale_fill_continuous
+##' @importFrom ggplot2 guides
+##' @importFrom ggplot2 guide_colorbar
+##' @importFrom ggplot2 theme
+##' @importFrom ggplot2 element_text
+##' @importFrom ggplot2 margin
+##' @importFrom ggplot2 xlab
+##' @importFrom ggplot2 ylab
+##' @importFrom ggplot2 ggtitle
+##' @export
+##' @examples
+##' dbs <- listEnrichrDbs()
+##' dbs <- c("GO_Molecular_Function_2018", "GO_Cellular_Component_2018", 
+##'          "GO_Biological_Process_2018")
+##' enriched <- enrichr(c("Runx1", "Gfi1", "Gfi1b", "Spi1", "Gata1", "Kdr"), dbs)
+##' # Plot top 20 GO-BP results ordered by P-value
+##' plotEnrich(enriched[[3]], showTerms = 20, numChar = 50, y = "Count", orderBy = "P.value")
+plotEnrich <- function(df, showTerms = 20, numChar = 40, y = "Count", orderBy = "P.value",
+                       xlab = NULL, ylab = NULL, title = NULL) {
+
+    if(!is.numeric(numChar)) {
+        stop(paste0("numChar '", numChar, "' is invalid."))
+    }
+
+    df <- .enrichment_prep_df(df, showTerms, orderBy)
+
+    # Create trimmed name (as seen in topGO)
+    shortName <- paste(substr(df$Term, 1, numChar),
+                       ifelse(nchar(df$Term) > numChar, '...', ''), sep = '')
+    df$shortName = shortName
+    df$shortName <- factor(df$shortName, levels = rev(unique(df$shortName)))
+    df$Ratio <- df$Significant/df$Annotated
+
+    # Define fill variable (P.value or Combined.Score)
+    if(orderBy == "Combined.Score") {
+        fill <- "Combined.Score"
+    } else {
+        fill <- "P.value"
+    }
+
+    # Define y variable (Count or Ratio)
+    if(y != "Ratio") {
+        y <- "Significant"
+    }
+
+    # Define variable mapping
+    map <- aes_string(x = "shortName", y = y, fill = fill)
+
+    # Define labels
+    if(is.null(xlab)) {
+        xlab <- "Enriched terms"
+    }
+
+    if(is.null(ylab)) {
+        if(y == "Ratio") {
+            ylab <- "Gene ratio"
+        } else {
+            ylab <- "Gene count"
         }
     }
-    close(enrich)
+
+    if(is.null(title)) {
+        title <- "Enrichment analysis by Enrichr"
+    }
+
+    # Make the ggplot
+    p <- ggplot(df, map) + geom_bar(stat = "identity") + coord_flip() + theme_bw()
+
+    if(orderBy == "Combined.Score") {
+        p <- p + scale_fill_continuous(low = "blue", high = "red") +
+                guides(fill = guide_colorbar(title = "Combined Score", reverse = FALSE))
+    } else {
+        p <- p + scale_fill_continuous(low = "red", high = "blue") +
+                guides(fill = guide_colorbar(title = "P value", reverse = TRUE))
+    }
+
+    # Adjust theme components
+    p <- p + theme(axis.text.x = element_text(colour = "black", vjust = 1),
+                   axis.text.y = element_text(colour = "black", hjust = 1),
+                   axis.title = element_text(color = "black", margin = margin(10, 5, 0, 0)),
+                   axis.title.y = element_text(angle = 90))
+
+    p <- p + xlab(xlab) + ylab(ylab) + ggtitle(title)
+
+    return(p)
 }
+

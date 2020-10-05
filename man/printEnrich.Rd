@@ -2,23 +2,22 @@
 % Please edit documentation in R/functions.R
 \name{printEnrich}
 \alias{printEnrich}
-\title{Print Enrichr output to text file.}
+\title{printEnrich}
 \usage{
-printEnrich(data, file, sep = "\\t", columns = c(2, 3, 6))
+printEnrich(data, prefix = "enrichr", showTerms = NULL, columns = c(1:9))
 }
 \arguments{
-\item{data}{Output from Enrichr function.}
+\item{data}{(Required). Output from Enrichr function.}
 
-\item{file}{Name of output file.}
+\item{prefix}{(Optional). Prefix of output file. Default is \code{"enrichr"}.}
 
-\item{sep}{Default TAB. How to separate fields.}
+\item{showTerms}{(Optional). Number of terms to show. 
+Default is \code{NULL} to print all terms.}
 
-\item{columns}{Columns from each entry of data.
-1-"Index", 2-"Name", 3-"Adjusted_P-value", 4-"Z-score"
-5-"Combined_Score", 6-"Genes", 7-"Overlap_P-value"}
-}
-\value{
-Produces file.
+\item{columns}{(Optional). Columns from each entry of data. 
+Default is \code{c(1:9)} to print all columns.
+1-"Term", 2-"Overlap", 3-"P.value", 4-"Adjusted.P.value" 5-"Old.P.value", 
+6-"Old.Adjusted.P.value" 7-"Odds.Ratio" 8-"Combined.Score" 9-"Combined.Score"}
 }
 \description{
 Print Enrichr output.
@@ -26,6 +25,15 @@ Print Enrichr output.
 \details{
 Print Enrichr output to text file.
 }
+\examples{
+dbs <- listEnrichrDbs()
+dbs <- c("GO_Molecular_Function_2018", "GO_Cellular_Component_2018", 
+         "GO_Biological_Process_2018")
+enriched <- enrichr(c("Runx1", "Gfi1", "Gfi1b", "Spi1", "Gata1", "Kdr"), dbs)
+printEnrich(enriched)
+}
 \author{
-Wajid Jawaid
+Wajid Jawaid \email{wj241@alumni.cam.ac.uk}
+
+I-Hsuan Lin \email{i-hsuan.lin@manchester.ac.uk}
 }

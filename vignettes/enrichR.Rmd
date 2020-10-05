@@ -74,5 +74,17 @@ if (websiteLive) {
 }
 ```
 
+Print Enrichr output to text file.
+
+```{r, echo = TRUE, eval = FALSE}
+printEnrich(enriched)
+```
+
+Plot Enrichr GO-BP output.
+
+```{r, echo = TRUE, eval = TRUE, fig.width = 8, fig.height = 6, fig.align = "center", dpi = 100}
+plotEnrich(enriched[[3]], showTerms = 20, numChar = 40, y = "Count", orderBy = "P.value")
+```
+
 # References
 Kuleshov, Maxim V., Matthew R. Jones, Andrew D. Rouillard, Nicolas F. Fernandez, Qiaonan Duan, Zichen Wang, Simon Koplev, et al. 2016. “Enrichr: A Comprehensive Gene Set Enrichment Analysis Web Server 2016 Update.” Nucleic Acids Res 44 (Web Server issue): W90–W97. https://doi.org/10.1093/nar/gkw377.
