@@ -2,8 +2,10 @@
 
 export(enrichr)
 export(listEnrichrDbs)
+export(listEnrichrSites)
 export(plotEnrich)
 export(printEnrich)
+export(setEnrichrSite)
 importFrom(ggplot2,aes_string)
 importFrom(ggplot2,coord_flip)
 importFrom(ggplot2,element_text)

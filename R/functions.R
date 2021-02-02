@@ -1,6 +1,6 @@
 ## Author: Wajid Jawaid
 ## Date: 1 August 2019
-## enrichR package: sends data to http://http://amp.pharm.mssm.edu/Enrichr/ for gene enrichment
+## enrichR package: sends data to https://maayanlab.cloud/Enrichr/ for gene enrichment
 ## in multiple databases.
 
 ##' onLoad hook to setup package options
@@ -12,11 +12,11 @@
 ##' @return NULL
 ##' @author Wajid Jawaid \email{wj241@alumni.cam.ac.uk}
 .onAttach <- function(libname, pkgname) {
-    options(enrichR.base.address = "http://amp.pharm.mssm.edu/Enrichr/")
+    options(enrichR.base.address = "https://maayanlab.cloud/Enrichr/")
     options(enrichR.live = TRUE)
     packageStartupMessage("Welcome to enrichR\nChecking connection ... ", appendLF = TRUE)
     options(modEnrichR.use = TRUE)
-    options(enrichR.sites.base.address = "http://amp.pharm.mssm.edu/")
+    options(enrichR.sites.base.address = "https://maayanlab.cloud/")
     options(enrichR.sites = c("Enrichr", "FlyEnrichr", "WormEnrichr", "YeastEnrichr", "FishEnrichr"))
     if (getOption("modEnrichR.use")) {
         listEnrichrSites()
@@ -57,6 +57,8 @@ getEnrichr <- function(url, ...) {
 ##' @title List Enrichr Websites
 ##' @return print Enrichr Website status
 ##' @author Alexander Blume
+##' @param ... (Optional  Additional parameters)
+##' @export
 listEnrichrSites <- function(...) {
     for (site in getOption("enrichR.sites")) {
         getEnrichr(url = paste0(getOption("enrichR.sites.base.address"), site, "/", "datasetStatistics"))
@@ -76,6 +78,7 @@ listEnrichrSites <- function(...) {
 ##' @param site site requested
 ##' @return Changes Enrichr Website connection
 ##' @author Alexander Blume
+##' @export
 setEnrichrSite <- function(site) {
     site <- gsub(getOption("enrichR.sites.base.address"), "", site)
     matched <- grep(paste0("^",site), 
@@ -134,7 +137,7 @@ listEnrichrDbs <- function() {
 ##' @param genes (Required). Character vector of gene names or data.frame of gene names in
 ##' in first column and a score between 0 and 1 in the other.
 ##' @param databases (Required). Character vector of databases to search.
-##' See http://amp.pharm.mssm.edu/Enrichr/ for available databases.
+##' See https://maayanlab.cloud/Enrichr/ for available databases.
 ##' @return Returns a list of data.frame of enrichment terms, p-values, ...
 ##' @author Wajid Jawaid \email{wj241@alumni.cam.ac.uk}
 ##' @importFrom httr GET POST
@@ -256,14 +259,17 @@ enrichr <- function(genes, databases = NULL) {
 ##' @importFrom utils write.table
 ##' @export
 ##' @examples
-##' dbs <- listEnrichrDbs()
-##' dbs <- c("GO_Molecular_Function_2018", "GO_Cellular_Component_2018", 
-##'          "GO_Biological_Process_2018")
-##' enriched <- enrichr(c("Runx1", "Gfi1", "Gfi1b", "Spi1", "Gata1", "Kdr"), dbs)
-##' printEnrich(enriched)
-
+##' if (getOption("enrichR.live")) {
+##'   enrichRLive <- TRUE
+##'   dbs <- listEnrichrDbs()
+##'   if(is.null(dbs)) enrichRLive <- FALSE
+##'   dbs <- c("GO_Molecular_Function_2018", "GO_Cellular_Component_2018", 
+##'            "GO_Biological_Process_2018")
+##'   enriched <- enrichr(c("Runx1", "Gfi1", "Gfi1b", "Spi1", "Gata1", "Kdr"), dbs)
+##'   if (enrichRLive) printEnrich(enriched)
+##' }
 printEnrich <- function(data, prefix = "enrichr", showTerms = NULL, columns = c(1:9)) {
-
+    if (!is.list(data)) stop("data is malformed must be a list")
     if(!is.numeric(columns)) {
         stop(paste0("columns '", columns, "' is invalid."))
     }
@@ -271,16 +277,14 @@ printEnrich <- function(data, prefix = "enrichr", showTerms = NULL, columns = c(
     for (i in 1:length(data)) {
         dbname <- names(data)[i]
         df <- data[[i]]
+        if (!is.data.frame(df)) stop("data is malformed - it must consist of data frames")
 
-    df <- .enrichment_prep_df(df, showTerms, orderBy = "P.value")
-    df <- df[, !colnames(df) %in% c("Annotated", "Significant")]
+        df <- .enrichment_prep_df(df, showTerms, orderBy = "P.value")
+        df <- df[, !colnames(df) %in% c("Annotated", "Significant")]
 
         if(any(columns > ncol(df))) {
             stop("Undefined columns selected")
         }
-
-    filename <- paste0(prefix, "_", dbname, ".txt")
-    write.table(df, file = filename, sep = "\t", quote = F, row.names = F, col.names = T)
     }
 }
 
@@ -324,15 +328,22 @@ printEnrich <- function(data, prefix = "enrichr", showTerms = NULL, columns = c(
 ##' @importFrom ggplot2 ggtitle
 ##' @export
 ##' @examples
-##' dbs <- listEnrichrDbs()
-##' dbs <- c("GO_Molecular_Function_2018", "GO_Cellular_Component_2018", 
-##'          "GO_Biological_Process_2018")
-##' enriched <- enrichr(c("Runx1", "Gfi1", "Gfi1b", "Spi1", "Gata1", "Kdr"), dbs)
-##' # Plot top 20 GO-BP results ordered by P-value
-##' plotEnrich(enriched[[3]], showTerms = 20, numChar = 50, y = "Count", orderBy = "P.value")
+##' if (getOption("enrichR.live")) {
+##'   dbs <- listEnrichrDbs()
+##'   enrichRLive <- TRUE
+##'   if (is.null(dbs)) enrichRLive <- FALSE
+##'   dbs <- c("GO_Molecular_Function_2018", "GO_Cellular_Component_2018", 
+##'            "GO_Biological_Process_2018")
+##'   enriched <- enrichr(c("Runx1", "Gfi1", "Gfi1b", "Spi1", "Gata1", "Kdr"), dbs)
+##'   # Plot top 20 GO-BP results ordered by P-value
+##'   if (enrichRLive) {
+##'     plotEnrich(enriched[[3]], showTerms = 20, numChar = 50, y = "Count",
+##'                orderBy = "P.value")
+##'   }
+##' }
 plotEnrich <- function(df, showTerms = 20, numChar = 40, y = "Count", orderBy = "P.value",
                        xlab = NULL, ylab = NULL, title = NULL) {
-
+    if(!is.data.frame(df)) stop("df is malformed - must be a data frame")
     if(!is.numeric(numChar)) {
         stop(paste0("numChar '", numChar, "' is invalid."))
     }

@@ -1,7 +1,7 @@
 ---
 title: "An R interface to the Enrichr database"
 author: "Wajid Jawaid"
-email: "wj241@cam.ac.uk"
+email: "wj241@alumni.cam.ac.uk"
 date: "`r Sys.Date()`"
 <!-- bibliography: ./vignettes/enrichr.bib -->
 output: github_document
@@ -17,13 +17,13 @@ knitr::opts_chunk$set(
 )
 ```
 
-[![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/enrichR)](https://cran.r-project.org/package=enrichR)
-[![Project Status: Active - The project has reached a stable, usable state and is being actively developed.](http://www.repostatus.org/badges/latest/active.svg)](http://www.repostatus.org/#active)
-[![CRAN mirror downloads](http://cranlogs.r-pkg.org/badges/enrichR)](https://cran.r-project.org/package=enrichR/)
+[![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/enrichR)](https://cran.r-project.org/package=enrichR)
+[![Project Status: Active - The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
+[![CRAN mirror downloads](https://cranlogs.r-pkg.org/badges/enrichR)](https://cran.r-project.org/package=enrichR/)
 
 # Installation
 
-**enrichR** can be installed from Github or soon from CRAN.
+**enrichR** can be installed from Github or from CRAN.
 
 ## Github
 
@@ -42,12 +42,19 @@ install.packages("enrichR")
 
 # Usage example
 
-**enrichR** provides an interface to the Enrichr database [@kuleshov_enrichr:_2016] hosted at http://amp.pharm.mssm.edu/Enrichr.  
+**enrichR** provides an interface to the Enrichr database [@kuleshov_enrichr:_2016] hosted at https://maayanlab.cloud/Enrichr/.  
 
-First find the list of all available databases from Enrichr.
+By default human genes are selected otherwise select your organism of choice. (This functionality was contributed by Alexander Blume)
 
 ```{r, echo = TRUE, eval = TRUE}
 library(enrichR)
+listEnrichrSites()
+setEnrichrSite("Enrichr") # Human genes
+```
+
+Then find the list of all available databases from Enrichr.
+
+```{r, echo = TRUE, eval = TRUE}
 dbs <- listEnrichrDbs()
 ```
 
@@ -57,7 +64,7 @@ head(dbs)
 
 ```{r, echo = FALSE, results='asis'}
 library(knitr)
-kable(head(dbs[c(1:3,5:6),]))
+kable(head(dbs[c(1:6),-4]))
 ```
 
 View and select your favourite databases. Then query enrichr, in this case I have used genes associated with embryonic haematopoiesis.
@@ -84,6 +91,12 @@ head(enrichr(genes790, c('LINCS_L1000_Chem_Pert_up'))[[1]])
 x <- head(enriched[["GO_Biological_Process_2015"]])
 x[,1] <- gsub("GO:", "GO_", x[,1])
 kable(x)
+```
+
+Plot Enrichr GO-BP output. (Plotting function contributed by I-Hsuan Lin)
+
+```{r, echo = TRUE, eval = TRUE, fig.width = 8, fig.height = 6, fig.align = "center", dpi = 100}
+plotEnrich(enriched[[3]], showTerms = 20, numChar = 40, y = "Count", orderBy = "P.value")
 ```
 
 # References
