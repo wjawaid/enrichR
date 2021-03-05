@@ -293,7 +293,7 @@ printEnrich <- function(data, prefix = "enrichr", showTerms = NULL, columns = c(
 
 ##' Visualise a Enrichr output as barplot
 ##'
-##' Visualise a Enrichr result from a selected gene-set library as barplot.
+##' Visualise Enrichr result from a selected gene-set library as barplot.
 ##' @title plotEnrich
 ##' @param df (Required). A single data.frame from a list of Enrichr output.
 ##' @param showTerms (Optional). Number of terms to show. Default is \code{20}.
