@@ -26,11 +26,15 @@ Print Enrichr output.
 Print Enrichr output to text file.
 }
 \examples{
-dbs <- listEnrichrDbs()
-dbs <- c("GO_Molecular_Function_2018", "GO_Cellular_Component_2018", 
-         "GO_Biological_Process_2018")
-enriched <- enrichr(c("Runx1", "Gfi1", "Gfi1b", "Spi1", "Gata1", "Kdr"), dbs)
-printEnrich(enriched)
+if (getOption("enrichR.live")) {
+  enrichRLive <- TRUE
+  dbs <- listEnrichrDbs()
+  if(is.null(dbs)) enrichRLive <- FALSE
+  dbs <- c("GO_Molecular_Function_2018", "GO_Cellular_Component_2018", 
+           "GO_Biological_Process_2018")
+  enriched <- enrichr(c("Runx1", "Gfi1", "Gfi1b", "Spi1", "Gata1", "Kdr"), dbs)
+  if (enrichRLive) printEnrich(enriched)
+}
 }
 \author{
 Wajid Jawaid \email{wj241@alumni.cam.ac.uk}

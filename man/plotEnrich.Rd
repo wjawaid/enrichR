@@ -50,12 +50,19 @@ Visualise a Enrichr output as barplot
 Print Enrichr output to text file.
 }
 \examples{
-dbs <- listEnrichrDbs()
-dbs <- c("GO_Molecular_Function_2018", "GO_Cellular_Component_2018", 
-         "GO_Biological_Process_2018")
-enriched <- enrichr(c("Runx1", "Gfi1", "Gfi1b", "Spi1", "Gata1", "Kdr"), dbs)
-# Plot top 20 GO-BP results ordered by P-value
-plotEnrich(enriched[[3]], showTerms = 20, numChar = 50, y = "Count", orderBy = "P.value")
+if (getOption("enrichR.live")) {
+  dbs <- listEnrichrDbs()
+  enrichRLive <- TRUE
+  if (is.null(dbs)) enrichRLive <- FALSE
+  dbs <- c("GO_Molecular_Function_2018", "GO_Cellular_Component_2018", 
+           "GO_Biological_Process_2018")
+  enriched <- enrichr(c("Runx1", "Gfi1", "Gfi1b", "Spi1", "Gata1", "Kdr"), dbs)
+  # Plot top 20 GO-BP results ordered by P-value
+  if (enrichRLive) {
+    plotEnrich(enriched[[3]], showTerms = 20, numChar = 50, y = "Count",
+               orderBy = "P.value")
+  }
+}
 }
 \seealso{
 \code{\link[ggplot2]{ggplot}}

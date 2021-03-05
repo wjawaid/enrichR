@@ -11,7 +11,7 @@ enrichr(genes, databases = NULL)
 in first column and a score between 0 and 1 in the other.}
 
 \item{databases}{(Required). Character vector of databases to search.
-See http://amp.pharm.mssm.edu/Enrichr/ for available databases.}
+See https://maayanlab.cloud/Enrichr/ for available databases.}
 }
 \value{
 Returns a list of data.frame of enrichment terms, p-values, ...

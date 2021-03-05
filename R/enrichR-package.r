@@ -1,6 +1,6 @@
 #' enrichR.
 #'
-#' Provides an R interface to all enrichR (http://amp.pharm.mssm.edu/Enrichr/) databases.
+#' Provides an R interface to all enrichR (https://maayanlab.cloud/Enrichr/) databases.
 #' @name enrichR
 #' @docType package
 NULL

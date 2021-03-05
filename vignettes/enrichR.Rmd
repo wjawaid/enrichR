@@ -34,30 +34,40 @@ install.packages("enrichR")
 
 # Usage example
 
-**enrichR** provides an interface to the Enrichr database [@kuleshov_enrichr:_2016] hosted at http://amp.pharm.mssm.edu/Enrichr.  
+**enrichR** provides an interface to the Enrichr database [@kuleshov_enrichr:_2016] hosted at https://maayanlab.cloud/Enrichr/.  
 
-First find the list of all available databases from Enrichr.
+By default human genes are selected otherwise select your organism of choice. (This functionality was contributed by Alexander Blume)
 
 ```{r, echo = TRUE, eval = TRUE}
 library(enrichR)
+listEnrichrSites()
+setEnrichrSite("Enrichr") # Human genes
+websiteLive <- TRUE
+```
+
+Then find the list of all available databases from Enrichr.
+
+```{r, echo = TRUE, eval = TRUE}
 dbs <- listEnrichrDbs()
 ```
 
-```{r, echo = TRUE, eval = FALSE}
+```{r, echo = TRUE, eval = TRUE}
 if (is.null(dbs)) websiteLive <- FALSE
 if (websiteLive) head(dbs)
 ```
 
 ```{r, echo = FALSE, results='asis'}
 library(knitr)
-if (websiteLive) kable(head(dbs[c(1:3,5:6),]))
+if (websiteLive) kable(head(dbs[c(1:6),-4]))
 ```
 
 View and select your favourite databases. Then query enrichr, in this case I have used genes associated with embryonic haematopoiesis.
 
 ```{r, echo = TRUE, eval = TRUE}
 dbs <- c("GO_Molecular_Function_2015", "GO_Cellular_Component_2015", "GO_Biological_Process_2015")
-if (websiteLive) enriched <- enrichr(c("Runx1", "Gfi1", "Gfi1b", "Spi1", "Gata1", "Kdr"), dbs)
+if (websiteLive) {
+    enriched <- enrichr(c("Runx1", "Gfi1", "Gfi1b", "Spi1", "Gata1", "Kdr"), dbs)
+}
 ```
 
 Now view the results table.
@@ -74,16 +84,10 @@ if (websiteLive) {
 }
 ```
 
-Print Enrichr output to text file.
-
-```{r, echo = TRUE, eval = FALSE}
-printEnrich(enriched)
-```
-
-Plot Enrichr GO-BP output.
+Plot Enrichr GO-BP output. (Plotting function contributed by I-Hsuan Lin)
 
 ```{r, echo = TRUE, eval = TRUE, fig.width = 8, fig.height = 6, fig.align = "center", dpi = 100}
-plotEnrich(enriched[[3]], showTerms = 20, numChar = 40, y = "Count", orderBy = "P.value")
+if (websiteLive) plotEnrich(enriched[[3]], showTerms = 20, numChar = 40, y = "Count", orderBy = "P.value")
 ```
 
 # References
