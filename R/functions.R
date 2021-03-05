@@ -241,11 +241,11 @@ enrichr <- function(genes, databases = NULL) {
     return(df)
 }
 
-##' Print Enrichr output.
+##' Print Enrichr results
 ##'
-##' Print Enrichr output to text file.
+##' Print Enrichr results from the selected gene-set libraries to individual text files.
 ##' @title printEnrich
-##' @param data (Required). Output from Enrichr function.
+##' @param data (Required). Output list object from the \code{"enrichr"} function.
 ##' @param prefix (Optional). Prefix of output file. Default is \code{"enrichr"}.
 ##' @param showTerms (Optional). Number of terms to show. 
 ##' Default is \code{NULL} to print all terms.
@@ -285,12 +285,15 @@ printEnrich <- function(data, prefix = "enrichr", showTerms = NULL, columns = c(
         if(any(columns > ncol(df))) {
             stop("Undefined columns selected")
         }
+
+	filename <- paste0(prefix, "_", dbname, ".txt")
+	write.table(df, file = filename, sep = "\t", quote = F, row.names = F, col.names = T)
     }
 }
 
 ##' Visualise a Enrichr output as barplot
 ##'
-##' Print Enrichr output to text file.
+##' Visualise a Enrichr result from a selected gene-set library as barplot.
 ##' @title plotEnrich
 ##' @param df (Required). A single data.frame from a list of Enrichr output.
 ##' @param showTerms (Optional). Number of terms to show. Default is \code{20}.
@@ -335,7 +338,7 @@ printEnrich <- function(data, prefix = "enrichr", showTerms = NULL, columns = c(
 ##'   dbs <- c("GO_Molecular_Function_2018", "GO_Cellular_Component_2018", 
 ##'            "GO_Biological_Process_2018")
 ##'   enriched <- enrichr(c("Runx1", "Gfi1", "Gfi1b", "Spi1", "Gata1", "Kdr"), dbs)
-##'   # Plot top 20 GO-BP results ordered by P-value
+##'   # Plot top 20 terms from "GO_Biological_Process_2018" and ordered by P-value
 ##'   if (enrichRLive) {
 ##'     plotEnrich(enriched[[3]], showTerms = 20, numChar = 50, y = "Count",
 ##'                orderBy = "P.value")
