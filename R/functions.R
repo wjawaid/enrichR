@@ -17,7 +17,7 @@
     packageStartupMessage("Welcome to enrichR\nChecking connection ... ", appendLF = TRUE)
     options(modEnrichR.use = TRUE)
     options(enrichR.sites.base.address = "https://maayanlab.cloud/")
-    options(enrichR.sites = c("Enrichr", "FlyEnrichr", "WormEnrichr", "YeastEnrichr", "FishEnrichr"))
+    options(enrichR.sites = c("Enrichr", "FlyEnrichr", "WormEnrichr", "YeastEnrichr", "FishEnrichr", "OxEnrichr"))
     if (getOption("modEnrichR.use")) {
         listEnrichrSites()
     } else {
