@@ -36,18 +36,34 @@
 ##' @param ... (Optional). Additional parameters to pass to GET
 ##' @return same as GET
 ##' @author Wajid Jawaid \email{wj241@alumni.cam.ac.uk}
+##' @author I-Hsuan Lin \email{i-hsuan.lin@manchester.ac.uk}
 ##' @importFrom httr GET
+##' @importFrom httr status_code
+##' @importFrom httr http_status
 getEnrichr <- function(url, ...) {
+    options(enrichR.live = FALSE)
     tryCatch({
-        options(enrichR.live = TRUE)
-        x <- GET(url=url, ...)
+        x <- GET(url = url, ...)
+        code <- status_code(x)
+        if(code != 200) {
+            # Error with status code
+            message(http_status(code)$message)
+        } else {
+            # OK/success
+            options(enrichR.live = TRUE)
+            invisible(x)
+        }
     },
-    error = function(err_msg) {
-        message("EnrichR website not responding")
-        options(enrichR.live = FALSE)
+    # Warning message
+    warning = function(warn) {
+        message(warn); message("") # force newline
+    },
+    # Error without status code
+    error = function(err) {
+        message(err); message("") # force newline
     },
     finally = function() {
-       invisible(x) 
+        invisible(x)
     })
 }
 

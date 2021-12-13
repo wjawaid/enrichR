@@ -5,12 +5,13 @@
 \alias{genes790}
 \title{790 gene symbols}
 \format{
-A vector.
-}
-\usage{
-genes790
+vector
 }
 \description{
 This is a character vector which consists of randomly selected 790 genes.
+}
+\examples{
+data(genes790)
+length(genes790)
 }
 \keyword{datasets}
