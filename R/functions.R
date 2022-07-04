@@ -131,7 +131,7 @@ listEnrichrDbs <- function() {
     dfSAF <- getOption("stringsAsFactors")
     options(stringsAsFactors = FALSE)
     dbs <- getEnrichr(url = paste0(getOption("enrichR.base.address"), "datasetStatistics"))
-    if (!getOption("enrichR.live")) return()
+    if (!getOption("enrichR.live")) stop("EnrichR site is not connected")
     ## if (length(dbs) == 1) {
     ##     if (dbs == "FAIL") {
     ##         return()
@@ -180,16 +180,10 @@ enrichr <- function(genes, databases = NULL) {
     ##      "ESCAPE")
     ##     databases <- gsub(" ", "_", dbs)
     ## }
-    if (length(genes) < 1) {
-        message("No genes have been given")
-        return()
-    }
+    if (length(genes) < 1) stop("No genes have been given")
     x_text <- getEnrichr(url = getOption("enrichR.base.address"))
-    if (!getOption("enrichR.live")) return()
-    if (is.null(databases)) {
-        message("No databases have been provided")
-        return()
-    }
+    if (!getOption("enrichR.live")) stop("EnrichR site is not connected")
+    if (is.null(databases)) stop("No databases have been provided")
     cat("Uploading data to Enrichr... ")
     if (is.vector(genes) & ! all(genes == "") & length(genes) != 0) {
         temp <- POST(url=paste0(getOption("enrichR.base.address"), "enrich"),
@@ -210,7 +204,7 @@ enrichr <- function(genes, databases = NULL) {
         cat("  Querying ", x, "... ", sep="")
         r <- getEnrichr(url=paste0(getOption("enrichR.base.address"), "export"),
                         query=list(file="API", backgroundType=x))
-        if (!getOption("enrichR.live")) return()
+        if (!getOption("enrichR.live")) stop("EnrichR site is not connected")
         r <- gsub("&#39;", "'", intToUtf8(r$content))
         tc <- textConnection(r)
         r <- read.table(tc, sep = "\t", header = TRUE, quote = "", comment.char="")
