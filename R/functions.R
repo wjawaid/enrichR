@@ -11,6 +11,7 @@
 ##' @param pkgname (Required). Package name
 ##' @return NULL
 ##' @author Wajid Jawaid \email{wj241@alumni.cam.ac.uk}
+##' @importFrom curl has_internet
 .onAttach <- function(libname, pkgname) {
     options(enrichR.base.address = "https://maayanlab.cloud/Enrichr/")
     options(enrichR.live = TRUE)
@@ -18,13 +19,15 @@
     options(modEnrichR.use = TRUE)
     options(enrichR.sites.base.address = "https://maayanlab.cloud/")
     options(enrichR.sites = c("Enrichr", "FlyEnrichr", "WormEnrichr", "YeastEnrichr", "FishEnrichr", "OxEnrichr"))
-    if (getOption("modEnrichR.use")) {
-        listEnrichrSites()
-    } else {
-        getEnrichr(url=paste0(getOption("enrichR.base.address"), "datasetStatistics"))
-        packageStartupMessage("Enrichr ... ", appendLF = FALSE)
-        if (getOption("enrichR.live")) packageStartupMessage("Connection is Live!")
-    }
+    if (has_internet()) {
+        if (getOption("modEnrichR.use")) {
+            listEnrichrSites()
+        } else {
+            getEnrichr(url=paste0(getOption("enrichR.base.address"), "datasetStatistics"))
+            packageStartupMessage("Enrichr ... ", appendLF = FALSE)
+            if (getOption("enrichR.live")) packageStartupMessage("Connection is Live!")
+        }
+    } else {packageStartupMessage("No internet connection could be found.")}
 }
 
 
@@ -343,7 +346,8 @@ printEnrich <- function(data, prefix = "enrichr", showTerms = NULL, columns = c(
 ##' }
 plotEnrich <- function(df, showTerms = 20, numChar = 40, y = "Count", orderBy = "P.value",
                        xlab = NULL, ylab = NULL, title = NULL) {
-    if(!is.data.frame(df)) stop("df is malformed - must be a data frame")
+    if(!is.data.frame(df)) {stop("df is malformed - must be a data frame")}
+    if(nrow(df) == 0 | ncol(df) == 0) {stop("df is malformed - must be a data frame")}
     if(!is.numeric(numChar)) {
         stop(paste0("numChar '", numChar, "' is invalid."))
     }

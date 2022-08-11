@@ -1,3 +1,5 @@
+# enrichR v3.1
+ - Changed to gracefully detect internet connection
 # enrichR v3.0
  - Updated enrichR.base.address
   - Included additional enrichr sites including FlyEnrichr, WormEnrichr, YeastEnrichR and FishEnrichR (Thanks to Alexander Blume)

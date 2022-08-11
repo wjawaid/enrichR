@@ -1,3 +1,5 @@
+* Version 3.1
+ - Graceful exit when no internet connection exists
 * Version 3.0
  - Updated enrichR.base.address
  - Included additional enrichr sites including FlyEnrichr, WormEnrichr, YeastEnrichR and FishEnrichR (Thanks to Alexander Blume)
