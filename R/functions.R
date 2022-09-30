@@ -15,6 +15,7 @@
 .onAttach <- function(libname, pkgname) {
     options(enrichR.base.address = "https://maayanlab.cloud/Enrichr/")
     options(enrichR.live = TRUE)
+    options(enrichR.quiet = FALSE)
     packageStartupMessage("Welcome to enrichR\nChecking connection ... ", appendLF = TRUE)
     options(modEnrichR.use = TRUE)
     options(enrichR.sites.base.address = "https://maayanlab.cloud/")
@@ -193,7 +194,7 @@ enrichr <- function(genes, databases = NULL) {
         message("No databases have been provided")
         return()
     }
-    cat("Uploading data to Enrichr... ")
+    if (!getOption("enrichR.quiet")) cat("Uploading data to Enrichr... ")
     if (is.vector(genes) & ! all(genes == "") & length(genes) != 0) {
         temp <- POST(url=paste0(getOption("enrichR.base.address"), "enrich"),
                      body=list(list=paste(genes, collapse="\n")))
@@ -205,12 +206,12 @@ enrichr <- function(genes, databases = NULL) {
         warning("genes must be a non-empty vector of gene names or a data.frame with genes and score.")
     }
     getEnrichr(url=paste0(getOption("enrichR.base.address"), "share"))
-    cat("Done.\n")
+    if (!getOption("enrichR.quiet")) cat("Done.\n")
     dbs <- as.list(databases)
     dfSAF <- getOption("stringsAsFactors")
     options(stringsAsFactors = FALSE)
     result <- lapply(dbs, function(x) {
-        cat("  Querying ", x, "... ", sep="")
+      if (!getOption("enrichR.quiet")) cat("  Querying ", x, "... ", sep="")
         r <- getEnrichr(url=paste0(getOption("enrichR.base.address"), "export"),
                         query=list(file="API", backgroundType=x))
         if (!getOption("enrichR.live")) return()
@@ -218,13 +219,13 @@ enrichr <- function(genes, databases = NULL) {
         tc <- textConnection(r)
         r <- read.table(tc, sep = "\t", header = TRUE, quote = "", comment.char="")
         close(tc)
-        cat("Done.\n")
+        if (!getOption("enrichR.quiet")) cat("Done.\n")
         return(r)
     })
     options(stringsAsFactors = dfSAF)
-    cat("Parsing results... ")
+    if (!getOption("enrichR.quiet")) cat("Parsing results... ")
     names(result) <- dbs
-    cat("Done.\n")
+    if (!getOption("enrichR.quiet")) cat("Done.\n")
     return(result)
 }
 
