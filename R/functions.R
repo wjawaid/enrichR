@@ -84,9 +84,9 @@ listEnrichrSites <- function(...) {
         packageStartupMessage(paste0(site, " ... "), appendLF = FALSE)
         if (paste0(getOption("enrichR.sites.base.address"), site, "/")  == getOption("enrichR.base.address")) {
             if (getOption("enrichR.live")) packageStartupMessage("Connection is Live!")
-        } else 
+        } else
             if (getOption("enrichR.live")) packageStartupMessage("Connection is available!")
-        
+
     }
 }
 
@@ -100,7 +100,7 @@ listEnrichrSites <- function(...) {
 ##' @export
 setEnrichrSite <- function(site) {
     site <- gsub(getOption("enrichR.sites.base.address"), "", site)
-    matched <- grep(paste0("^",site), 
+    matched <- grep(paste0("^",site),
                     getOption("enrichR.sites"),
                     ignore.case = TRUE,value = FALSE)
     if( length(matched) == 0 ) {
@@ -109,7 +109,7 @@ setEnrichrSite <- function(site) {
                 paste("-",getOption("enrichR.sites"),"\n"))
     } else if (length(matched) > 1) {
         message("Given website matches multiple options: ", site)
-        message(paste("-", getOption("enrichR.sites")[matched],"\n"),)        
+        message(paste("-", getOption("enrichR.sites")[matched],"\n"),)
     } else {
         site <- getOption("enrichR.sites")[matched]
         options(enrichR.base.address = paste0(getOption("enrichR.sites.base.address"),site,"/"))
@@ -165,7 +165,7 @@ listEnrichrDbs <- function() {
 ##' @export
 ##' @examples
 ##' dbs <- listEnrichrDbs()
-##' dbs <- c("GO_Molecular_Function_2018", "GO_Cellular_Component_2018", 
+##' dbs <- c("GO_Molecular_Function_2018", "GO_Cellular_Component_2018",
 ##'          "GO_Biological_Process_2018")
 ##' enriched <- enrichr(c("Runx1", "Gfi1", "Gfi1b", "Spi1", "Gata1", "Kdr"), dbs)
 enrichr <- function(genes, databases = NULL) {
@@ -266,33 +266,40 @@ enrichr <- function(genes, databases = NULL) {
 ##' @title printEnrich
 ##' @param data (Required). Output list object from the \code{"enrichr"} function.
 ##' @param prefix (Optional). Prefix of output file. Default is \code{"enrichr"}.
-##' @param showTerms (Optional). Number of terms to show. 
+##' @param showTerms (Optional). Number of terms to show.
 ##' Default is \code{NULL} to print all terms.
-##' @param columns (Optional). Columns from each entry of data. 
+##' @param columns (Optional). Columns from each entry of data.
 ##' Default is \code{c(1:9)} to print all columns.
-##' 1-"Term", 2-"Overlap", 3-"P.value", 4-"Adjusted.P.value" 5-"Old.P.value", 
+##' 1-"Term", 2-"Overlap", 3-"P.value", 4-"Adjusted.P.value" 5-"Old.P.value",
 ##' 6-"Old.Adjusted.P.value" 7-"Odds.Ratio" 8-"Combined.Score" 9-"Combined.Score"
+##' @param outFile (Optional). Output file format, choose from "txt" and "excel". Default is "txt".
 ##' @return NULL
 ##' @author Wajid Jawaid \email{wj241@alumni.cam.ac.uk}
 ##' @author I-Hsuan Lin \email{i-hsuan.lin@manchester.ac.uk}
 ##' @importFrom utils write.table
+##' @importFrom WriteXLS WriteXLS
 ##' @export
 ##' @examples
 ##' if (getOption("enrichR.live")) {
 ##'   enrichRLive <- TRUE
 ##'   dbs <- listEnrichrDbs()
 ##'   if(is.null(dbs)) enrichRLive <- FALSE
-##'   dbs <- c("GO_Molecular_Function_2018", "GO_Cellular_Component_2018", 
+##'   dbs <- c("GO_Molecular_Function_2018", "GO_Cellular_Component_2018",
 ##'            "GO_Biological_Process_2018")
 ##'   enriched <- enrichr(c("Runx1", "Gfi1", "Gfi1b", "Spi1", "Gata1", "Kdr"), dbs)
 ##'   if (enrichRLive) printEnrich(enriched)
 ##' }
-printEnrich <- function(data, prefix = "enrichr", showTerms = NULL, columns = c(1:9)) {
+printEnrich <- function(data, prefix = "enrichr", showTerms = NULL, columns = c(1:9), outFile = c("txt", "excel")) {
     if (!is.list(data)) stop("data is malformed must be a list")
-    if(!is.numeric(columns)) {
+    if (!is.numeric(columns)) {
         stop(paste0("columns '", columns, "' is invalid."))
     }
-
+		outFile <- match.arg(outFile)
+		if (outFile == "excel") {
+			filename <- paste0(prefix, ".xlsx")
+			output_excel_df = vector("list", length(data))
+		}
+		
     for (i in 1:length(data)) {
         dbname <- names(data)[i]
         df <- data[[i]]
@@ -305,8 +312,15 @@ printEnrich <- function(data, prefix = "enrichr", showTerms = NULL, columns = c(
             stop("Undefined columns selected")
         }
 
-	filename <- paste0(prefix, "_", dbname, ".txt")
-	write.table(df, file = filename, sep = "\t", quote = F, row.names = F, col.names = T)
+				if (outFile == "txt") {
+					filename <- paste0(prefix, "_", dbname, ".txt")
+					write.table(df, file = filename, sep = "\t", quote = F, row.names = F, col.names = T)
+				} else {
+					output_excel_df[[i]] <- df
+					if (i == length(data)) {
+						WriteXLS(output_excel_df, ExcelFileName = filename, SheetNames = names(data))
+					}
+				}
     }
 }
 
@@ -354,7 +368,7 @@ printEnrich <- function(data, prefix = "enrichr", showTerms = NULL, columns = c(
 ##'   dbs <- listEnrichrDbs()
 ##'   enrichRLive <- TRUE
 ##'   if (is.null(dbs)) enrichRLive <- FALSE
-##'   dbs <- c("GO_Molecular_Function_2018", "GO_Cellular_Component_2018", 
+##'   dbs <- c("GO_Molecular_Function_2018", "GO_Cellular_Component_2018",
 ##'            "GO_Biological_Process_2018")
 ##'   enriched <- enrichr(c("Runx1", "Gfi1", "Gfi1b", "Spi1", "Gata1", "Kdr"), dbs)
 ##'   # Plot top 20 terms from "GO_Biological_Process_2018" and ordered by P-value
@@ -433,4 +447,3 @@ plotEnrich <- function(df, showTerms = 20, numChar = 40, y = "Count", orderBy = 
 
     return(p)
 }
-
