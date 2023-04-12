@@ -28,6 +28,7 @@ Default is \code{c(1:9)} to print all columns.
 
 \item{write2file}{(Optional). Set to TRUE if you would like this functino to
 output a file}
+
 \item{outFile}{(Optional). Output file format, choose from "txt" and "excel". Default is "txt".}
 }
 \description{

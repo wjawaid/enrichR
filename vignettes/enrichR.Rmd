@@ -93,7 +93,9 @@ if (success) {
 Plot Enrichr GO-BP output. (Plotting function contributed by I-Hsuan Lin)
 
 ```{r, echo = TRUE, eval = TRUE, fig.width = 8, fig.height = 6, fig.align = "center", dpi = 100}
-if (websiteLive) plotEnrich(enriched[[3]], showTerms = 20, numChar = 40, y = "Count", orderBy = "P.value")
+if (websiteLive) {
+    plotEnrich(enriched[[3]], showTerms = 20, numChar = 40, y = "Count", orderBy = "P.value")
+}
 ```
 
 # References

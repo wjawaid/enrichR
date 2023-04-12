@@ -275,12 +275,9 @@ enrichr <- function(genes, databases = NULL) {
 ##' Default is \code{c(1:9)} to print all columns.
 ##' 1-"Term", 2-"Overlap", 3-"P.value", 4-"Adjusted.P.value" 5-"Old.P.value",
 ##' 6-"Old.Adjusted.P.value" 7-"Odds.Ratio" 8-"Combined.Score" 9-"Combined.Score"
-<<<<<<< HEAD
 ##' @param write2file (Optional). Set to TRUE if you would like this functino to
 ##' output a file
-=======
 ##' @param outFile (Optional). Output file format, choose from "txt" and "excel". Default is "txt".
->>>>>>> f4d4f3771e103d39bafe2e27d0ca30f30414dff5
 ##' @return NULL
 ##' @author Wajid Jawaid \email{wj241@alumni.cam.ac.uk}
 ##' @author I-Hsuan Lin \email{i-hsuan.lin@manchester.ac.uk}
@@ -297,12 +294,8 @@ enrichr <- function(genes, databases = NULL) {
 ##'   enriched <- enrichr(c("Runx1", "Gfi1", "Gfi1b", "Spi1", "Gata1", "Kdr"), dbs)
 ##'   if (enrichRLive) printEnrich(enriched, write2file = FALSE)
 ##' }
-<<<<<<< HEAD
 printEnrich <- function(data, prefix = "enrichr", showTerms = NULL, columns = c(1:9),
-                        write2file = TRUE) {
-=======
-printEnrich <- function(data, prefix = "enrichr", showTerms = NULL, columns = c(1:9), outFile = c("txt", "excel")) {
->>>>>>> f4d4f3771e103d39bafe2e27d0ca30f30414dff5
+                        write2file = TRUE, outFile = c("txt", "excel")) {
     if (!is.list(data)) stop("data is malformed must be a list")
     if (!is.numeric(columns)) {
         stop(paste0("columns '", columns, "' is invalid."))
@@ -324,24 +317,17 @@ printEnrich <- function(data, prefix = "enrichr", showTerms = NULL, columns = c(
         if(any(columns > ncol(df))) {
             stop("Undefined columns selected")
         }
-
-<<<<<<< HEAD
         if (write2file) {
-            filename <- paste0(prefix, "_", dbname, ".txt")
-            write.table(df, file = filename, sep = "\t", quote = F,
-                        row.names = F, col.names = T)
+            if (outFile == "txt") {
+                filename <- paste0(prefix, "_", dbname, ".txt")
+                write.table(df, file = filename, sep = "\t", quote = F, row.names = F, col.names = T)
+            } else {
+                output_excel_df[[i]] <- df
+                if (i == length(data)) {
+                    WriteXLS(output_excel_df, ExcelFileName = filename, SheetNames = names(data))
+                }
+            }
         }
-=======
-				if (outFile == "txt") {
-					filename <- paste0(prefix, "_", dbname, ".txt")
-					write.table(df, file = filename, sep = "\t", quote = F, row.names = F, col.names = T)
-				} else {
-					output_excel_df[[i]] <- df
-					if (i == length(data)) {
-						WriteXLS(output_excel_df, ExcelFileName = filename, SheetNames = names(data))
-					}
-				}
->>>>>>> f4d4f3771e103d39bafe2e27d0ca30f30414dff5
     }
 }
 
