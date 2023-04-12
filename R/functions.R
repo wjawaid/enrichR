@@ -341,6 +341,7 @@ printEnrich <- function(data, prefix = "enrichr", showTerms = NULL, columns = c(
 ##' @importFrom ggplot2 coord_flip
 ##' @importFrom ggplot2 theme_bw
 ##' @importFrom ggplot2 scale_fill_continuous
+##' @importFrom ggplot2 scale_x_discrete
 ##' @importFrom ggplot2 guides
 ##' @importFrom ggplot2 guide_colorbar
 ##' @importFrom ggplot2 theme
@@ -366,8 +367,12 @@ printEnrich <- function(data, prefix = "enrichr", showTerms = NULL, columns = c(
 ##' }
 plotEnrich <- function(df, showTerms = 20, numChar = 40, y = "Count", orderBy = "P.value",
                        xlab = NULL, ylab = NULL, title = NULL) {
-    if(!is.data.frame(df)) {stop("df is malformed - must be a data frame")}
-    if(nrow(df) == 0 | ncol(df) == 0) {stop("df is malformed - must be a data frame")}
+    if(!is.data.frame(df)) {
+        stop("Input df is malformed - must be a data.frame object.")
+    }
+    if(nrow(df) == 0 | ncol(df) == 0) {
+        stop("Input df is empty.")
+    }
     if(!is.numeric(numChar)) {
         stop(paste0("numChar '", numChar, "' is invalid."))
     }
@@ -377,8 +382,13 @@ plotEnrich <- function(df, showTerms = 20, numChar = 40, y = "Count", orderBy = 
     # Create trimmed name (as seen in topGO)
     shortName <- paste(substr(df$Term, 1, numChar),
                        ifelse(nchar(df$Term) > numChar, '...', ''), sep = '')
-    df$shortName = shortName
-    df$shortName <- factor(df$shortName, levels = rev(unique(df$shortName)))
+    names(shortName) <- df$Term
+
+    # Print warning if there are any duplicated trimmed names
+    if(any(duplicated(shortName))) {
+        warning("There are duplicated trimmed names in the plot, consider increasing the 'numChar' setting.")
+    }
+
     df$Ratio <- df$Significant/df$Annotated
 
     # Define fill variable (P.value or Combined.Score)
@@ -394,7 +404,7 @@ plotEnrich <- function(df, showTerms = 20, numChar = 40, y = "Count", orderBy = 
     }
 
     # Define variable mapping
-    map <- aes_string(x = "shortName", y = y, fill = fill)
+    map <- aes_string(x = "Term", y = y, fill = fill)
 
     # Define labels
     if(is.null(xlab)) {
@@ -414,7 +424,8 @@ plotEnrich <- function(df, showTerms = 20, numChar = 40, y = "Count", orderBy = 
     }
 
     # Make the ggplot
-    p <- ggplot(df, map) + geom_bar(stat = "identity") + coord_flip() + theme_bw()
+    p <- ggplot(df, map) + geom_bar(stat = "identity") + coord_flip() + theme_bw() +
+        scale_x_discrete(labels = rev(shortName), limits = rev(df$Term))
 
     if(orderBy == "Combined.Score") {
         p <- p + scale_fill_continuous(low = "blue", high = "red") +
