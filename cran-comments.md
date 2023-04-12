@@ -1,3 +1,8 @@
+* Version 3.2
+ - Fixed further problems with errors when internet connection was not available
+ - Automated bibliography using pandoc and .bib files
+ - Added optional file writing for printEnrich()
+ - Changed all getOption("stringsAsFactors") to getOption("stringsAsFactors", FALSE) 
 * Version 3.1
  - Graceful exit when no internet connection exists
 * Version 3.0

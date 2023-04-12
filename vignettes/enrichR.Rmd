@@ -3,6 +3,7 @@ title: "An R interface to the Enrichr database"
 author: "Wajid Jawaid"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
+bibliography: enrichr.bib
 vignette: >
   %\VignetteIndexEntry{An R interface to the Enrichr database}
   %\VignetteEngine{knitr::rmarkdown}
@@ -40,19 +41,21 @@ By default human genes are selected otherwise select your organism of choice. (T
 
 ```{r, echo = TRUE, eval = TRUE}
 library(enrichR)
-listEnrichrSites()
-setEnrichrSite("Enrichr") # Human genes
-websiteLive <- TRUE
+websiteLive <- getOption("enrichR.live")
+if (websiteLive) {
+    listEnrichrSites()
+    setEnrichrSite("Enrichr") # Human genes   
+}
 ```
 
 Then find the list of all available databases from Enrichr.
 
 ```{r, echo = TRUE, eval = TRUE}
-dbs <- listEnrichrDbs()
+if (websiteLive) dbs <- listEnrichrDbs()
 ```
 
 ```{r, echo = TRUE, eval = TRUE}
-if (is.null(dbs)) websiteLive <- FALSE
+## if (is.null(dbs)) websiteLive <- FALSE
 if (websiteLive) head(dbs)
 ```
 
@@ -77,10 +80,13 @@ if (websiteLive) enriched[["GO_Biological_Process_2015"]]
 ```
 
 ```{r, echo = FALSE, results = 'asis'}
-if (websiteLive) {
- x <- head(enriched[["GO_Biological_Process_2015"]])
- x[,1] <- gsub("GO:", "GO_", x[,1])
- kable(x)
+success <- ifelse(exists("enriched"), TRUE, FALSE) & websiteLive
+success <- success & (length(enriched) >= 3)
+success <- success & all(dim(enriched[[3]]) > 2)                  
+if (success) {
+    x <- head(enriched[["GO_Biological_Process_2015"]])
+    x[,1] <- gsub("GO:", "GO_", x[,1])
+    kable(x)
 }
 ```
 
@@ -91,4 +97,3 @@ if (websiteLive) plotEnrich(enriched[[3]], showTerms = 20, numChar = 40, y = "Co
 ```
 
 # References
-Kuleshov, Maxim V., Matthew R. Jones, Andrew D. Rouillard, Nicolas F. Fernandez, Qiaonan Duan, Zichen Wang, Simon Koplev, et al. 2016. “Enrichr: A Comprehensive Gene Set Enrichment Analysis Web Server 2016 Update.” Nucleic Acids Res 44 (Web Server issue): W90–W97. https://doi.org/10.1093/nar/gkw377.

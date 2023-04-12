@@ -27,7 +27,10 @@
             packageStartupMessage("Enrichr ... ", appendLF = FALSE)
             if (getOption("enrichR.live")) packageStartupMessage("Connection is Live!")
         }
-    } else {packageStartupMessage("No internet connection could be found.")}
+    } else {
+        packageStartupMessage("No internet connection could be found.")
+        options(enrichR.live = FALSE)
+    }
 }
 
 
@@ -85,7 +88,7 @@ listEnrichrSites <- function(...) {
         if (paste0(getOption("enrichR.sites.base.address"), site, "/")  == getOption("enrichR.base.address")) {
             if (getOption("enrichR.live")) packageStartupMessage("Connection is Live!")
         } else 
-            if (getOption("enrichR.live")) packageStartupMessage("Connection is available!")
+            if (getOption("enrichR.live")) packageStartupMessage("Connection is Live!")
         
     }
 }
@@ -131,7 +134,7 @@ setEnrichrSite <- function(site) {
 ##' @examples
 ##' dbs <- listEnrichrDbs()
 listEnrichrDbs <- function() {
-    dfSAF <- getOption("stringsAsFactors")
+    dfSAF <- getOption("stringsAsFactors", FALSE)
     options(stringsAsFactors = FALSE)
     dbs <- getEnrichr(url = paste0(getOption("enrichR.base.address"), "datasetStatistics"))
     if (!getOption("enrichR.live")) return()
@@ -207,7 +210,7 @@ enrichr <- function(genes, databases = NULL) {
     getEnrichr(url=paste0(getOption("enrichR.base.address"), "share"))
     cat("Done.\n")
     dbs <- as.list(databases)
-    dfSAF <- getOption("stringsAsFactors")
+    dfSAF <- getOption("stringsAsFactors", FALSE)
     options(stringsAsFactors = FALSE)
     result <- lapply(dbs, function(x) {
         cat("  Querying ", x, "... ", sep="")
@@ -272,6 +275,8 @@ enrichr <- function(genes, databases = NULL) {
 ##' Default is \code{c(1:9)} to print all columns.
 ##' 1-"Term", 2-"Overlap", 3-"P.value", 4-"Adjusted.P.value" 5-"Old.P.value", 
 ##' 6-"Old.Adjusted.P.value" 7-"Odds.Ratio" 8-"Combined.Score" 9-"Combined.Score"
+##' @param write2file (Optional). Set to TRUE if you would like this functino to
+##' output a file
 ##' @return NULL
 ##' @author Wajid Jawaid \email{wj241@alumni.cam.ac.uk}
 ##' @author I-Hsuan Lin \email{i-hsuan.lin@manchester.ac.uk}
@@ -285,9 +290,10 @@ enrichr <- function(genes, databases = NULL) {
 ##'   dbs <- c("GO_Molecular_Function_2018", "GO_Cellular_Component_2018", 
 ##'            "GO_Biological_Process_2018")
 ##'   enriched <- enrichr(c("Runx1", "Gfi1", "Gfi1b", "Spi1", "Gata1", "Kdr"), dbs)
-##'   if (enrichRLive) printEnrich(enriched)
+##'   if (enrichRLive) printEnrich(enriched, write2file = FALSE)
 ##' }
-printEnrich <- function(data, prefix = "enrichr", showTerms = NULL, columns = c(1:9)) {
+printEnrich <- function(data, prefix = "enrichr", showTerms = NULL, columns = c(1:9),
+                        write2file = TRUE) {
     if (!is.list(data)) stop("data is malformed must be a list")
     if(!is.numeric(columns)) {
         stop(paste0("columns '", columns, "' is invalid."))
@@ -305,8 +311,11 @@ printEnrich <- function(data, prefix = "enrichr", showTerms = NULL, columns = c(
             stop("Undefined columns selected")
         }
 
-	filename <- paste0(prefix, "_", dbname, ".txt")
-	write.table(df, file = filename, sep = "\t", quote = F, row.names = F, col.names = T)
+        if (write2file) {
+            filename <- paste0(prefix, "_", dbname, ".txt")
+            write.table(df, file = filename, sep = "\t", quote = F,
+                        row.names = F, col.names = T)
+        }
     }
 }
 

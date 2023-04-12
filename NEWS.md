@@ -1,3 +1,8 @@
+# enrichR v3.2
+ - Fixed further problems with errors when internet connection was not available
+ - Automated bibliography using pandoc and .bib files
+ - Added optional file writing for printEnrich().
+ - Changed all getOption("stringsAsFactors") to getOption("stringsAsFactors", FALSE)
 # enrichR v3.1
  - Changed to gracefully detect internet connection
 # enrichR v3.0

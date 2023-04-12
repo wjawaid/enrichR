@@ -4,10 +4,16 @@
 \alias{printEnrich}
 \title{printEnrich}
 \usage{
-printEnrich(data, prefix = "enrichr", showTerms = NULL, columns = c(1:9))
+printEnrich(
+  data,
+  prefix = "enrichr",
+  showTerms = NULL,
+  columns = c(1:9),
+  write2file = TRUE
+)
 }
 \arguments{
-\item{data}{(Required). Output from Enrichr function.}
+\item{data}{(Required). Output list object from the \code{"enrichr"} function.}
 
 \item{prefix}{(Optional). Prefix of output file. Default is \code{"enrichr"}.}
 
@@ -18,12 +24,15 @@ Default is \code{NULL} to print all terms.}
 Default is \code{c(1:9)} to print all columns.
 1-"Term", 2-"Overlap", 3-"P.value", 4-"Adjusted.P.value" 5-"Old.P.value", 
 6-"Old.Adjusted.P.value" 7-"Odds.Ratio" 8-"Combined.Score" 9-"Combined.Score"}
+
+\item{write2file}{(Optional). Set to TRUE if you would like this functino to
+output a file}
 }
 \description{
-Print Enrichr output.
+Print Enrichr results
 }
 \details{
-Print Enrichr output to text file.
+Print Enrichr results from the selected gene-set libraries to individual text files.
 }
 \examples{
 if (getOption("enrichR.live")) {
@@ -33,7 +42,7 @@ if (getOption("enrichR.live")) {
   dbs <- c("GO_Molecular_Function_2018", "GO_Cellular_Component_2018", 
            "GO_Biological_Process_2018")
   enriched <- enrichr(c("Runx1", "Gfi1", "Gfi1b", "Spi1", "Gata1", "Kdr"), dbs)
-  if (enrichRLive) printEnrich(enriched)
+  if (enrichRLive) printEnrich(enriched, write2file = FALSE)
 }
 }
 \author{
