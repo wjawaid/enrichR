@@ -47,17 +47,17 @@ A \code{\link{ggplot}}2 plot object
 Visualise a Enrichr output as barplot
 }
 \details{
-Print Enrichr output to text file.
+Visualise Enrichr result from a selected gene-set library as barplot.
 }
 \examples{
 if (getOption("enrichR.live")) {
   dbs <- listEnrichrDbs()
   enrichRLive <- TRUE
   if (is.null(dbs)) enrichRLive <- FALSE
-  dbs <- c("GO_Molecular_Function_2018", "GO_Cellular_Component_2018", 
+  dbs <- c("GO_Molecular_Function_2018", "GO_Cellular_Component_2018",
            "GO_Biological_Process_2018")
   enriched <- enrichr(c("Runx1", "Gfi1", "Gfi1b", "Spi1", "Gata1", "Kdr"), dbs)
-  # Plot top 20 GO-BP results ordered by P-value
+  # Plot top 20 terms from "GO_Biological_Process_2018" and ordered by P-value
   if (enrichRLive) {
     plotEnrich(enriched[[3]], showTerms = 20, numChar = 50, y = "Count",
                orderBy = "P.value")
