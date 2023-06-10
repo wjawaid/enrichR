@@ -265,19 +265,20 @@ enrichr <- function(genes, databases = NULL) {
 
 ##' Print Enrichr results
 ##'
-##' Print Enrichr results from the selected gene-set libraries to individual text files.
+##' Print Enrichr results from the selected gene-set libraries to individual text files 
+##' or a Excel spreadsheet.
 ##' @title printEnrich
 ##' @param data (Required). Output list object from the \code{"enrichr"} function.
 ##' @param prefix (Optional). Prefix of output file. Default is \code{"enrichr"}.
 ##' @param showTerms (Optional). Number of terms to show.
 ##' Default is \code{NULL} to print all terms.
-##' @param columns (Optional). Columns from each entry of data.
-##' Default is \code{c(1:9)} to print all columns.
+##' @param columns (Optional). Columns from each entry of data, denoted by a positive 
+##' integer vector. Default is \code{c(1:9)} to print all columns.
 ##' 1-"Term", 2-"Overlap", 3-"P.value", 4-"Adjusted.P.value" 5-"Old.P.value",
 ##' 6-"Old.Adjusted.P.value" 7-"Odds.Ratio" 8-"Combined.Score" 9-"Combined.Score"
-##' @param write2file (Optional). Set to TRUE if you would like this functino to
-##' output a file
-##' @param outFile (Optional). Output file format, choose from "txt" and "excel". Default is "txt".
+##' @param write2file (Optional). Deprecated argument. Always print to text or Excel file(s).
+##' @param outFile (Optional). Output file format, choose from "txt" and "excel". 
+##' Default is "txt".
 ##' @return NULL
 ##' @author Wajid Jawaid \email{wj241@alumni.cam.ac.uk}
 ##' @author I-Hsuan Lin \email{i-hsuan.lin@manchester.ac.uk}
@@ -292,20 +293,29 @@ enrichr <- function(genes, databases = NULL) {
 ##'   dbs <- c("GO_Molecular_Function_2018", "GO_Cellular_Component_2018",
 ##'            "GO_Biological_Process_2018")
 ##'   enriched <- enrichr(c("Runx1", "Gfi1", "Gfi1b", "Spi1", "Gata1", "Kdr"), dbs)
-##'   if (enrichRLive) printEnrich(enriched, write2file = FALSE)
+##'   if (enrichRLive) printEnrich(enriched, outFile = "excel")
 ##' }
 printEnrich <- function(data, prefix = "enrichr", showTerms = NULL, columns = c(1:9),
-                        write2file = TRUE, outFile = c("txt", "excel")) {
+                        outFile = c("txt","excel"), write2file = NULL) {
     if (!is.list(data)) stop("data is malformed must be a list")
-    if (!is.numeric(columns)) {
-        stop(paste0("columns '", columns, "' is invalid."))
+    if (!is.integer(columns)) {
+        stop(sprintf("'columns=' (%s) is invalid, must be a positive integer vector", 
+                     paste(shQuote(columns), collapse = ",")))
     }
-		outFile <- match.arg(outFile)
-		if (outFile == "excel") {
-			filename <- paste0(prefix, ".xlsx")
-			output_excel_df = vector("list", length(data))
-		}
-		
+
+    outFile <- match.arg(outFile)
+    if (outFile == "excel") {
+        filename <- paste0(prefix, ".xlsx")
+        output_excel_df <- vector("list", length(data))
+        sheetnames <- names(data)
+    } else {
+        filenames <- paste0(prefix, "_", names(data), ".txt")
+    }
+
+    if (!is.null(write2file)) {
+        .Deprecated(msg = "'write2file=' is deprecated and will be ignored")
+    }
+
     for (i in 1:length(data)) {
         dbname <- names(data)[i]
         df <- data[[i]]
@@ -316,19 +326,20 @@ printEnrich <- function(data, prefix = "enrichr", showTerms = NULL, columns = c(
 
         if(any(columns > ncol(df))) {
             stop("Undefined columns selected")
+        } else {
+            df <- df[,columns]
         }
-        if (write2file) {
-            if (outFile == "txt") {
-                filename <- paste0(prefix, "_", dbname, ".txt")
-                write.table(df, file = filename, sep = "\t", quote = F, row.names = F, col.names = T)
-            } else {
-                output_excel_df[[i]] <- df
-                if (i == length(data)) {
-                    WriteXLS(output_excel_df, ExcelFileName = filename, SheetNames = names(data))
-                }
+
+        if (outFile == "excel") {
+            output_excel_df[[i]] <- df
+            if (i == length(data)) {
+                WriteXLS(output_excel_df, ExcelFileName = filename, SheetNames = sheetnames)
             }
+        } else {
+            write.table(df, file = filenames[i], sep = "\t", quote = F, row.names = F, col.names = T)
         }
     }
+    message(sprintf("Output results in '%s' format", outFile))
 }
 
 ##' Visualise a Enrichr output as barplot

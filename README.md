@@ -117,7 +117,16 @@ plotEnrich(enriched[[3]], showTerms = 20, numChar = 40, y = "Count", orderBy = "
 
 <img src="./tools/README-unnamed-chunk-12-1.png" style="display: block; margin: auto;" />
 
-# References2
+Save Enrichr results as text or Excel files. By default (i.e. `outFile="txt"`), the results from the
+selected databases are saved into individual text files. When using `outFile="excel"`, the results are
+saved into worksheets in a single Excel 2007 (XLSX) file. (Print function contributed by I-Hsuan Lin
+and Kai Hu)
+
+```r
+printEnrich(enriched)
+```
+
+# References
 
 <div id="refs" class="references csl-bib-body hanging-indent">
 
