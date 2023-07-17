@@ -13,12 +13,13 @@
 ##' @author Wajid Jawaid \email{wj241@alumni.cam.ac.uk}
 ##' @importFrom curl has_internet
 .onAttach <- function(libname, pkgname) {
-    options(enrichR.base.address = "https://maayanlab.cloud/Enrichr/")
+    options(enrichR.sites.base.address = "https://maayanlab.cloud/")
+    options(enrichR.base.address = paste0(getOption("enrichR.sites.base.address"), "Enrichr/"))
+    options(speedrichr.base.address = paste0(getOption("enrichR.sites.base.address"), "speedrichr/api/"))
     options(enrichR.live = TRUE)
     options(enrichR.quiet = FALSE)
     packageStartupMessage("Welcome to enrichR\nChecking connection ... ", appendLF = TRUE)
     options(modEnrichR.use = TRUE)
-    options(enrichR.sites.base.address = "https://maayanlab.cloud/")
     options(enrichR.sites = c("Enrichr", "FlyEnrichr", "WormEnrichr", "YeastEnrichr", "FishEnrichr", "OxEnrichr"))
     if (has_internet()) {
         if (getOption("modEnrichR.use")) {
@@ -152,14 +153,86 @@ listEnrichrDbs <- function() {
     dbs
 }
 
+# Given an input, check format and return a character vector
+# - In standard analysis without background, crisp (symbols only) and fuzzy (with scores) gene sets are acceptable
+# - In analysis with background, only crisp gene sets are acceptable
+.formatGenes <- function(x, type = c("standard","background")) {
+    err_msg <- "Genes must be a character vector of Entrez gene symbols or a data.frame with gene symbols and/or score"
+    type <- match.arg(type)
+
+    if(is.data.frame(x)) {
+        if(ncol(x) == 0) stop(err_msg)
+        if(!is.character(x[,1])) stop(err_msg)
+        if(ncol(x) == 1 | type == "background") { # 1-column input or background genes
+            input <- x[,1]
+	} else {
+            if(is.numeric(x[,2]) & !all(x[,2] <= 1)) stop("The score (degree of membership) should be between 0 and 1")
+            input <- paste(x[,1], x[,2], sep = ",")
+	}
+    } else if(is.character(x)) {
+        if(length(x) == 0) stop(err_msg)
+        input <- x
+    } else {
+        stop(err_msg)
+    }
+
+    input <- unique(input[nzchar(input)])
+    if(length(input) == 0) stop(err_msg) else paste(input, collapse = "\n")
+}
+
+# Upload gene list using Speedrichr API
+.add_list <- function(genes) {
+    base.address <- getOption("speedrichr.base.address")
+    url <- paste0(base.address, "addList")
+    payload <- list(list = .formatGenes(genes, "background"), description = NA)
+    cat(" - Your gene set... ")
+    response <- POST(url = url, body = payload)
+    data <- fromJSON(rawToChar(response$content)) # userListId
+    cat("Done.\n")
+    return(data)
+}
+
+# Upload background list using Speedrichr API
+.add_background <- function(genes) {
+    base.address <- getOption("speedrichr.base.address")
+    url <- paste0(base.address, "addbackground")
+    payload <- list(background = .formatGenes(genes, "background"))
+    cat(" - Your background... ")
+    response <- POST(url = url, body = payload)
+    data <- fromJSON(rawToChar(response$content)) # backgroundid
+    cat("Done.\n")
+    return(data)
+}
+
+# Get enrichment result using Speedrichr API
+.get_backgroundenrich <- function(uId, bId, db) {
+    base.address <- getOption("speedrichr.base.address")
+    url <- paste0(base.address, "backgroundenrich")
+    payload <- list(userListId = uId,
+                    backgroundid = bId,
+                    backgroundType = db)
+    cat(paste0(" - ", db, "... "))
+    response <- POST(url = url, body = payload)
+    # Substitute Infinity with "Inf"
+    json <- gsub("Infinity,", "\"Inf\",", rawToChar(response$content))
+    json <- gsub("NaN,", "\"NaN\",", json)
+    data <- fromJSON(json)
+    cat("Done.\n")
+    return(data)
+}
+
 ##' Gene enrichment using Enrichr
 ##'
 ##' Gene enrichment using Enrichr
 ##' @title Gene enrichment using Enrichr
-##' @param genes (Required). Character vector of gene names or data.frame of gene names in
-##' in first column and a score between 0 and 1 in the other.
+##' @param genes (Required). Character vector of Entrez gene symbols as input. A data.frame
+##' of gene symbols in first column is also acceptable, optionally a score denoting the
+##' degree of membership between 0 and 1 in the second column.
 ##' @param databases (Required). Character vector of databases to search.
 ##' See https://maayanlab.cloud/Enrichr/ for available databases.
+##' @param background (Optional). Character vector of Entrez gene symbols to be used as
+##' background. A data.frame of gene symbols in first column is also acceptable.
+##' Enrichment analysis with background genes is only available on the main site (Enrichr).
 ##' @return Returns a list of data.frame of enrichment terms, p-values, ...
 ##' @author Wajid Jawaid \email{wj241@alumni.cam.ac.uk}
 ##' @importFrom httr GET POST
@@ -171,7 +244,7 @@ listEnrichrDbs <- function() {
 ##' dbs <- c("GO_Molecular_Function_2018", "GO_Cellular_Component_2018",
 ##'          "GO_Biological_Process_2018")
 ##' enriched <- enrichr(c("Runx1", "Gfi1", "Gfi1b", "Spi1", "Gata1", "Kdr"), dbs)
-enrichr <- function(genes, databases = NULL) {
+enrichr <- function(genes, databases = NULL, background = NULL) {
     ## if (is.null(databases)) {
     ##     dbs <- c("ChEA 2015", "Epigenomics Roadmap HM ChIP-seq",
     ##      "ENCODE and ChEA Consensus TFs from ChIP-X",
@@ -187,43 +260,62 @@ enrichr <- function(genes, databases = NULL) {
     ##     databases <- gsub(" ", "_", dbs)
     ## }
     if (length(genes) < 1) {
-        message("No genes have been given")
-        return()
+        stop("No genes have been given")
     }
-    x_text <- getEnrichr(url = getOption("enrichR.base.address"))
-    if (!getOption("enrichR.live")) return()
+    base.address <- getOption("enrichR.base.address")
+    x_text <- getEnrichr(url = base.address)
+    if (!getOption("enrichR.live")) stop("Enrichr website is unreachable")
     if (is.null(databases)) {
-        message("No databases have been provided")
-        return()
+        stop("No databases have been provided")
     }
-    if (!getOption("enrichR.quiet")) cat("Uploading data to Enrichr... ")
-    if (is.vector(genes) & ! all(genes == "") & length(genes) != 0) {
-        temp <- POST(url=paste0(getOption("enrichR.base.address"), "enrich"),
-                     body=list(list=paste(genes, collapse="\n")))
-    } else if (is.data.frame(genes)) {
-        temp <- POST(url=paste0(getOption("enrichR.base.address"), "enrich"),
-                     body=list(list=paste(paste(genes[,1], genes[,2], sep=","),
-                                          collapse="\n")))
-    } else {
-        warning("genes must be a non-empty vector of gene names or a data.frame with genes and score.")
+    if(!is.null(background)) {
+        if(basename(base.address) != "Enrichr") {
+            warning("Enrichment analysis with background genes is only supported on the main site\nSwitching to 'Enrichr'")
+            setEnrichrSite("Enrichr")
+	} else if(!is.vector(background) | all(background == "") | length(background) == 0) stop("'background' is invalid")
     }
-    getEnrichr(url=paste0(getOption("enrichR.base.address"), "share"))
-    if (!getOption("enrichR.quiet")) cat("Done.\n")
-    dbs <- as.list(databases)
     dfSAF <- getOption("stringsAsFactors", FALSE)
     options(stringsAsFactors = FALSE)
-    result <- lapply(dbs, function(x) {
-      if (!getOption("enrichR.quiet")) cat("  Querying ", x, "... ", sep="")
-        r <- getEnrichr(url=paste0(getOption("enrichR.base.address"), "export"),
-                        query=list(file="API", backgroundType=x))
-        if (!getOption("enrichR.live")) return()
-        r <- gsub("&#39;", "'", intToUtf8(r$content))
-        tc <- textConnection(r)
-        r <- read.table(tc, sep = "\t", header = TRUE, quote = "", comment.char="")
-        close(tc)
+    if(is.null(background)) {
+        if (!getOption("enrichR.quiet")) cat("Uploading data to Enrichr... ")
+        response <- POST(url=paste0(base.address, "enrich"), body=list(list=.formatGenes(genes, "standard")))
+        getEnrichr(url=paste0(getOption("enrichR.base.address"), "share"))
         if (!getOption("enrichR.quiet")) cat("Done.\n")
-        return(r)
-    })
+        dbs <- as.list(databases)
+        result <- lapply(dbs, function(x) {
+            if (!getOption("enrichR.quiet")) cat("  Querying ", x, "... ", sep="")
+            r <- getEnrichr(url=paste0(base.address, "export"), query=list(file="API", backgroundType=x))
+            if (!getOption("enrichR.live")) stop("Enrichr website is unreachable")
+            r <- gsub("&#39;", "'", intToUtf8(r$content))
+            tc <- textConnection(r)
+            r <- read.table(tc, sep = "\t", header = TRUE, quote = "", comment.char="")
+            close(tc)
+            if (!getOption("enrichR.quiet")) cat("Done.\n")
+	    # Term, Overlap, P.value, Adjusted.P.value, Old.P.value, Old.Adjusted.P.value, Odds.Ratio, Combined.Score, Genes
+            return(r)
+        })
+    } else {
+        if (!getOption("enrichR.quiet")) cat("Uploading data to Speedrichr...\n")
+        uId <- .add_list(genes)$userListId
+	bId <- .add_background(background)$backgroundid
+	cat("Getting enrichment results...\n")
+        result <- list()
+        for(db in dbs) {
+            res <- .get_backgroundenrich(uId, bId, db)
+
+	    r <- as.data.frame(do.call(rbind, (lapply(res[[db]], function(i) { i[[6]] <- paste(i[[6]], collapse = ";"); unlist(i) }))))
+            # Rank, Term, P.value, Odds.Ratio, Combined.Score, Genes, Adjusted.P.value, Old.P.value, Old.Adjusted.P.value
+            colnames(r) <- c("Rank","Term","P.value","Odds.Ratio","Combined.Score","Genes","Adjusted.P.value","Old.P.value","Old.Adjusted.P.value")
+	    r <- r[,c("Term","Rank","P.value","Adjusted.P.value","Old.P.value","Old.Adjusted.P.value","Odds.Ratio","Combined.Score","Genes")]
+	    r$P.value <- as.numeric(r$P.value)
+	    r$Adjusted.P.value <- as.numeric(r$Adjusted.P.value)
+	    r$Odds.Ratio <- as.numeric(r$Odds.Ratio)
+	    r$Combined.Score <- as.numeric(r$Combined.Score)
+	    r$Old.P.value <- as.integer(r$Old.P.value)
+	    r$Old.Adjusted.P.value <- as.integer(r$Old.Adjusted.P.value)
+	    result[[db]] <- r
+	}
+    }
     options(stringsAsFactors = dfSAF)
     if (!getOption("enrichR.quiet")) cat("Parsing results... ")
     names(result) <- dbs

@@ -4,14 +4,19 @@
 \alias{enrichr}
 \title{Gene enrichment using Enrichr}
 \usage{
-enrichr(genes, databases = NULL)
+enrichr(genes, databases = NULL, background = NULL)
 }
 \arguments{
-\item{genes}{(Required). Character vector of gene names or data.frame of gene names in
-in first column and a score between 0 and 1 in the other.}
+\item{genes}{(Required). Character vector of Entrez gene symbols as input. A data.frame
+of gene symbols in first column is also acceptable, optionally a score denoting the
+degree of membership between 0 and 1 in the second column.}
 
 \item{databases}{(Required). Character vector of databases to search.
 See https://maayanlab.cloud/Enrichr/ for available databases.}
+
+\item{background}{(Optional). Character vector of Entrez gene symbols to be used as
+background. A data.frame of gene symbols in first column is also acceptable.
+Enrichment analysis with background genes is only available on the main site (Enrichr).}
 }
 \value{
 Returns a list of data.frame of enrichment terms, p-values, ...
