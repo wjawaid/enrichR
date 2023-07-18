@@ -25,7 +25,7 @@
         if (getOption("modEnrichR.use")) {
             listEnrichrSites()
         } else {
-            getEnrichr(url=paste0(getOption("enrichR.base.address"), "datasetStatistics"))
+            getEnrichr(url = paste0(getOption("enrichR.base.address"), "datasetStatistics"))
             packageStartupMessage("Enrichr ... ", appendLF = FALSE)
             if (getOption("enrichR.live")) packageStartupMessage("Connection is Live!")
         }
@@ -38,20 +38,22 @@
 
 ##' Helper function
 ##'
-##' Helper function for GET
-##' @title Helper function for GET
+##' Helper function for HTTP methods GET and POST
+##' @title Helper function for HTTP methods GET and POST
+##' @param method (Required). HTTP method. Default is \code{"GET"}
 ##' @param url (Required). URL address requested
-##' @param ... (Optional). Additional parameters to pass to GET
-##' @return same as GET
+##' @param ... (Optional). Additional parameters to pass to GET/POST
+##' @return same as GET/POST
 ##' @author Wajid Jawaid \email{wj241@alumni.cam.ac.uk}
 ##' @author I-Hsuan Lin \email{i-hsuan.lin@manchester.ac.uk}
-##' @importFrom httr GET
+##' @importFrom httr GET POST
 ##' @importFrom httr status_code
 ##' @importFrom httr http_status
-getEnrichr <- function(url, ...) {
+getEnrichr <- function(method = "GET", url, ...) {
+    if(!method %in% c("GET","POST")) stop("Support GET and POST only.")
     options(enrichR.live = FALSE)
     tryCatch({
-        x <- GET(url = url, ...)
+        x <- if(method == "GET") GET(url = url, ...) else POST(url = url, ...)
         code <- status_code(x)
         if(code != 200) {
             # Error with status code
@@ -110,15 +112,15 @@ setEnrichrSite <- function(site) {
     if( length(matched) == 0 ) {
         message("Given website does not match available sites: ", site)
         message("Choose from:\n",
-                paste("-",getOption("enrichR.sites"),"\n"))
+                paste("-",getOption("enrichR.sites"), "\n"))
     } else if (length(matched) > 1) {
         message("Given website matches multiple options: ", site)
-        message(paste("-", getOption("enrichR.sites")[matched],"\n"),)
+        message(paste("-", getOption("enrichR.sites")[matched], "\n"),)
     } else {
         site <- getOption("enrichR.sites")[matched]
-        options(enrichR.base.address = paste0(getOption("enrichR.sites.base.address"),site,"/"))
-        message("Connection changed to ",paste0(getOption("enrichR.sites.base.address"),site,"/"))
-        getEnrichr(url = paste0(getOption("enrichR.base.address"),"datasetStatistics"))
+        options(enrichR.base.address = paste0(getOption("enrichR.sites.base.address"),site, "/"))
+        message("Connection changed to ",paste0(getOption("enrichR.sites.base.address"),site, "/"))
+        getEnrichr(url = paste0(getOption("enrichR.base.address"), "datasetStatistics"))
         if (getOption("enrichR.live")) message("Connection is Live!")
     }
 }
@@ -129,7 +131,6 @@ setEnrichrSite <- function(site) {
 ##' @title Look up available databases on Enrichr
 ##' @return A data.frame of available Enrichr databases
 ##' @author Wajid Jawaid \email{wj241@alumni.cam.ac.uk}
-##' @importFrom httr GET POST
 ##' @importFrom rjson fromJSON
 ##' @export
 ##' @examples
@@ -139,13 +140,7 @@ listEnrichrDbs <- function() {
     options(stringsAsFactors = FALSE)
     dbs <- getEnrichr(url = paste0(getOption("enrichR.base.address"), "datasetStatistics"))
     if (!getOption("enrichR.live")) return()
-    ## if (length(dbs) == 1) {
-    ##     if (dbs == "FAIL") {
-    ##         return()
-    ##     }
-    ## }
-    dbs <- dbs$content
-    dbs <- intToUtf8(dbs)
+    dbs <- intToUtf8(dbs$content)
     dbs <- fromJSON(dbs)
     dbs <- lapply(dbs$statistics, function(x) do.call(cbind.data.frame, x))
     dbs <- do.call(rbind.data.frame, dbs)
@@ -153,9 +148,9 @@ listEnrichrDbs <- function() {
     dbs
 }
 
-# Given an input, check format and return a character vector
-# - In standard analysis without background, crisp (symbols only) and fuzzy (with scores) gene sets are acceptable
-# - In analysis with background, only crisp gene sets are acceptable
+## Given an input, check format and return a character vector
+## - In standard analysis without background, crisp (symbols only) and fuzzy (with scores) gene sets are acceptable
+## - In analysis with background, only crisp gene sets are acceptable
 .formatGenes <- function(x, type = c("standard","background")) {
     err_msg <- "Genes must be a character vector of Entrez gene symbols or a data.frame with gene symbols and/or score"
     type <- match.arg(type)
@@ -180,31 +175,31 @@ listEnrichrDbs <- function() {
     if(length(input) == 0) stop(err_msg) else paste(input, collapse = "\n")
 }
 
-# Upload gene list using Speedrichr API
+## Upload gene list using Speedrichr API
 .add_list <- function(genes) {
     base.address <- getOption("speedrichr.base.address")
     url <- paste0(base.address, "addList")
     payload <- list(list = .formatGenes(genes, "background"), description = NA)
     cat(" - Your gene set... ")
-    response <- POST(url = url, body = payload)
-    data <- fromJSON(rawToChar(response$content)) # userListId
-    cat("Done.\n")
+    response <- getEnrichr(url = url, body = payload, method = "POST")
+    if (!getOption("enrichR.quiet")) cat("Done.\n")
+    data <- fromJSON(rawToChar(response$content))
     return(data)
 }
 
-# Upload background list using Speedrichr API
+## Upload background list using Speedrichr API
 .add_background <- function(genes) {
     base.address <- getOption("speedrichr.base.address")
     url <- paste0(base.address, "addbackground")
     payload <- list(background = .formatGenes(genes, "background"))
     cat(" - Your background... ")
-    response <- POST(url = url, body = payload)
-    data <- fromJSON(rawToChar(response$content)) # backgroundid
-    cat("Done.\n")
+    response <- getEnrichr(url = url, body = payload, method = "POST")
+    if (!getOption("enrichR.quiet")) cat("Done.\n")
+    data <- fromJSON(rawToChar(response$content))
     return(data)
 }
 
-# Get enrichment result using Speedrichr API
+## Get enrichment result using Speedrichr API
 .get_backgroundenrich <- function(uId, bId, db) {
     base.address <- getOption("speedrichr.base.address")
     url <- paste0(base.address, "backgroundenrich")
@@ -212,12 +207,12 @@ listEnrichrDbs <- function() {
                     backgroundid = bId,
                     backgroundType = db)
     cat(paste0(" - ", db, "... "))
-    response <- POST(url = url, body = payload)
+    response <- getEnrichr(url = url, body = payload, method = "POST")
+    if (!getOption("enrichR.quiet")) cat("Done.\n")
     # Substitute Infinity with "Inf"
     json <- gsub("Infinity,", "\"Inf\",", rawToChar(response$content))
     json <- gsub("NaN,", "\"NaN\",", json)
     data <- fromJSON(json)
-    cat("Done.\n")
     return(data)
 }
 
@@ -235,7 +230,6 @@ listEnrichrDbs <- function() {
 ##' Enrichment analysis with background genes is only available on the main site (Enrichr).
 ##' @return Returns a list of data.frame of enrichment terms, p-values, ...
 ##' @author Wajid Jawaid \email{wj241@alumni.cam.ac.uk}
-##' @importFrom httr GET POST
 ##' @importFrom rjson fromJSON
 ##' @importFrom utils read.table
 ##' @export
@@ -263,7 +257,7 @@ enrichr <- function(genes, databases = NULL, background = NULL) {
         stop("No genes have been given")
     }
     base.address <- getOption("enrichR.base.address")
-    x_text <- getEnrichr(url = base.address)
+    getEnrichr(url = base.address)
     if (!getOption("enrichR.live")) stop("Enrichr website is unreachable")
     if (is.null(databases)) {
         stop("No databases have been provided")
@@ -278,17 +272,17 @@ enrichr <- function(genes, databases = NULL, background = NULL) {
     options(stringsAsFactors = FALSE)
     if(is.null(background)) {
         if (!getOption("enrichR.quiet")) cat("Uploading data to Enrichr... ")
-        response <- POST(url=paste0(base.address, "enrich"), body=list(list=.formatGenes(genes, "standard")))
-        getEnrichr(url=paste0(getOption("enrichR.base.address"), "share"))
+        # POST data to server, response not required
+        getEnrichr(url = paste0(base.address, "enrich"), body = list(list = .formatGenes(genes, "standard")), method = "POST")
         if (!getOption("enrichR.quiet")) cat("Done.\n")
         dbs <- as.list(databases)
         result <- lapply(dbs, function(x) {
             if (!getOption("enrichR.quiet")) cat("  Querying ", x, "... ", sep="")
-            r <- getEnrichr(url=paste0(base.address, "export"), query=list(file="API", backgroundType=x))
+            r <- getEnrichr(url = paste0(base.address, "export"), query = list(file = "API", backgroundType = x))
             if (!getOption("enrichR.live")) stop("Enrichr website is unreachable")
             r <- gsub("&#39;", "'", intToUtf8(r$content))
             tc <- textConnection(r)
-            r <- read.table(tc, sep = "\t", header = TRUE, quote = "", comment.char="")
+            r <- read.table(tc, sep = "\t", header = TRUE, quote = "", comment.char = "")
             close(tc)
             if (!getOption("enrichR.quiet")) cat("Done.\n")
 	    # Term, Overlap, P.value, Adjusted.P.value, Old.P.value, Old.Adjusted.P.value, Odds.Ratio, Combined.Score, Genes
@@ -297,7 +291,9 @@ enrichr <- function(genes, databases = NULL, background = NULL) {
     } else {
         if (!getOption("enrichR.quiet")) cat("Uploading data to Speedrichr...\n")
         uId <- .add_list(genes)$userListId
+	Sys.sleep(1)
 	bId <- .add_background(background)$backgroundid
+	Sys.sleep(1)
 	cat("Getting enrichment results...\n")
         result <- list()
         for(db in dbs) {
