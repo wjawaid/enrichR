@@ -2,23 +2,25 @@
 % Please edit documentation in R/functions.R
 \name{getEnrichr}
 \alias{getEnrichr}
-\title{Helper function for GET}
+\title{Helper function for HTTP methods GET and POST}
 \usage{
-getEnrichr(url, ...)
+getEnrichr(method = "GET", url, ...)
 }
 \arguments{
+\item{method}{(Required). HTTP method. Default is \code{"GET"}}
+
 \item{url}{(Required). URL address requested}
 
-\item{...}{(Optional). Additional parameters to pass to GET}
+\item{...}{(Optional). Additional parameters to pass to GET/POST}
 }
 \value{
-same as GET
+same as GET/POST
 }
 \description{
 Helper function
 }
 \details{
-Helper function for GET
+Helper function for HTTP methods GET and POST
 }
 \author{
 Wajid Jawaid \email{wj241@alumni.cam.ac.uk}

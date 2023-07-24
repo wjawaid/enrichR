@@ -25,7 +25,8 @@ Indicates the number characters to keep in the term description.}
 
 \item{y}{(Optional). A character string. Default is \code{"Count"}.
 Indicates the variable that should be mapped to the y-axis.
-It can be either \code{"Count"} or \code{"Ratio"}.}
+It can be either \code{"Count"} or \code{"Ratio"}. 
+Results that includes background genes in the analysis can only show \code{"Count"}.}
 
 \item{orderBy}{(Optional). A character string. Default is \code{"P.value"}.
 Indicates how to order the Enrichr results before subsetting to keep top \code{N} terms.
@@ -54,10 +55,10 @@ if (getOption("enrichR.live")) {
   dbs <- listEnrichrDbs()
   enrichRLive <- TRUE
   if (is.null(dbs)) enrichRLive <- FALSE
-  dbs <- c("GO_Molecular_Function_2018", "GO_Cellular_Component_2018",
-           "GO_Biological_Process_2018")
+  dbs <- c("GO_Molecular_Function_2023", "GO_Cellular_Component_2023",
+           "GO_Biological_Process_2023")
   enriched <- enrichr(c("Runx1", "Gfi1", "Gfi1b", "Spi1", "Gata1", "Kdr"), dbs)
-  # Plot top 20 terms from "GO_Biological_Process_2018" and ordered by P-value
+  # Plot top 20 terms from "GO_Biological_Process_2023" and ordered by P-value
   if (enrichRLive) {
     plotEnrich(enriched[[3]], showTerms = 20, numChar = 50, y = "Count",
                orderBy = "P.value")

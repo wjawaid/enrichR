@@ -46,7 +46,8 @@
 ##' @return same as GET/POST
 ##' @author Wajid Jawaid \email{wj241@alumni.cam.ac.uk}
 ##' @author I-Hsuan Lin \email{i-hsuan.lin@manchester.ac.uk}
-##' @importFrom httr GET POST
+##' @importFrom httr GET
+##' @importFrom httr POST
 ##' @importFrom httr status_code
 ##' @importFrom httr http_status
 getEnrichr <- function(method = "GET", url, ...) {
@@ -108,7 +109,7 @@ setEnrichrSite <- function(site) {
     site <- gsub(getOption("enrichR.sites.base.address"), "", site)
     matched <- grep(paste0("^",site),
                     getOption("enrichR.sites"),
-                    ignore.case = TRUE,value = FALSE)
+                    ignore.case = TRUE, value = FALSE)
     if( length(matched) == 0 ) {
         message("Given website does not match available sites: ", site)
         message("Choose from:\n",
@@ -175,15 +176,43 @@ listEnrichrDbs <- function() {
     if(length(input) == 0) stop(err_msg) else paste(input, collapse = "\n")
 }
 
+## Download and parse GMT files from Enrichr
+.read_gmt <- function(db) {
+    base.address <- getOption("enrichR.base.address")
+    url <- paste0(base.address, "geneSetLibrary?mode=text&libraryName=", db)
+    tf <- tempfile(pattern = db, fileext = ".gmt")
+    cat("   - Download GMT file... ")
+    tryCatch(download.file(url, tf, mode = "w", quiet = TRUE), 
+	     warning = function(warn) { message(warn); message("") },
+	     error = function(err) { message(err); message("") })
+    lines <- readLines(tf)
+    # Formatting from backr.R
+    gmt <- list()
+    for(line in lines) {
+        line = gsub("\"", "", trimws(line))
+        sp = unlist(strsplit(line, "\t"))
+        sp[3:length(sp)] = gsub(",.*$", "", sp[3:length(sp)])
+        gmt[[sp[1]]] = sort(unique(sp[3:length(sp)]))
+    }
+    unlink(tf)
+    cat("Done.\n")
+    return(gmt)
+}
+
 ## Upload gene list using Speedrichr API
 .add_list <- function(genes) {
     base.address <- getOption("speedrichr.base.address")
     url <- paste0(base.address, "addList")
     payload <- list(list = .formatGenes(genes, "background"), description = NA)
     cat(" - Your gene set... ")
-    response <- getEnrichr(url = url, body = payload, method = "POST")
+    response <- getEnrichr(url = url, body = payload, method = "POST", handle = NULL,
+			   config = httr::config(http_version = 1))
+    # Handle odd errors that escape tryCatch
+    if(is.null(response)) {
+        stop("Error uploading gene list. Please try again later.")
+    }
     if (!getOption("enrichR.quiet")) cat("Done.\n")
-    data <- fromJSON(rawToChar(response$content))
+    data <- rjson::fromJSON(rawToChar(response$content))
     return(data)
 }
 
@@ -193,9 +222,14 @@ listEnrichrDbs <- function() {
     url <- paste0(base.address, "addbackground")
     payload <- list(background = .formatGenes(genes, "background"))
     cat(" - Your background... ")
-    response <- getEnrichr(url = url, body = payload, method = "POST")
+    response <- getEnrichr(url = url, body = payload, method = "POST", handle = NULL,
+			   config = httr::config(http_version = 1))
+    # Handle odd errors that escape tryCatch
+    if(is.null(response)) {
+        stop("Error uploading background list. Please try again later.")
+    }
     if (!getOption("enrichR.quiet")) cat("Done.\n")
-    data <- fromJSON(rawToChar(response$content))
+    data <- rjson::fromJSON(rawToChar(response$content))
     return(data)
 }
 
@@ -207,7 +241,12 @@ listEnrichrDbs <- function() {
                     backgroundid = bId,
                     backgroundType = db)
     cat(paste0(" - ", db, "... "))
-    response <- getEnrichr(url = url, body = payload, method = "POST")
+    response <- getEnrichr(url = url, body = payload, method = "POST", handle = NULL)
+    # Handle odd errors that escape tryCatch
+    if(is.null(response)) {
+        stop("Error running enrichment analysis. Please try again later.")
+    }
+
     if (!getOption("enrichR.quiet")) cat("Done.\n")
     # Substitute Infinity with "Inf"
     json <- gsub("Infinity,", "\"Inf\",", rawToChar(response$content))
@@ -218,7 +257,7 @@ listEnrichrDbs <- function() {
 
 ##' Gene enrichment using Enrichr
 ##'
-##' Gene enrichment using Enrichr
+##' Gene enrichment using Enrichr, also, you can now try adding a background.
 ##' @title Gene enrichment using Enrichr
 ##' @param genes (Required). Character vector of Entrez gene symbols as input. A data.frame
 ##' of gene symbols in first column is also acceptable, optionally a score denoting the
@@ -226,8 +265,12 @@ listEnrichrDbs <- function() {
 ##' @param databases (Required). Character vector of databases to search.
 ##' See https://maayanlab.cloud/Enrichr/ for available databases.
 ##' @param background (Optional). Character vector of Entrez gene symbols to be used as
-##' background. A data.frame of gene symbols in first column is also acceptable.
-##' Enrichment analysis with background genes is only available on the main site (Enrichr).
+##' background. A data.frame of gene symbols in first column is also acceptable. 
+##' Default is \code{"NULL"}. Enrichment analysis with background genes is only available 
+##' on the main site (Enrichr). Also, it is using a different API service (Speedrichr), 
+##' hence it is a little slower to complete and return the results.
+##' @param include_overlap (Optional). Download database in GMT format to include 'Overlap'
+##' in the resulting data.frame when analysing with a background. Default is \code{"FALSE"}.
 ##' @return Returns a list of data.frame of enrichment terms, p-values, ...
 ##' @author Wajid Jawaid \email{wj241@alumni.cam.ac.uk}
 ##' @importFrom rjson fromJSON
@@ -235,10 +278,10 @@ listEnrichrDbs <- function() {
 ##' @export
 ##' @examples
 ##' dbs <- listEnrichrDbs()
-##' dbs <- c("GO_Molecular_Function_2018", "GO_Cellular_Component_2018",
-##'          "GO_Biological_Process_2018")
+##' dbs <- c("GO_Molecular_Function_2023", "GO_Cellular_Component_2023",
+##'          "GO_Biological_Process_2023")
 ##' enriched <- enrichr(c("Runx1", "Gfi1", "Gfi1b", "Spi1", "Gata1", "Kdr"), dbs)
-enrichr <- function(genes, databases = NULL, background = NULL) {
+enrichr <- function(genes, databases = NULL, background = NULL, include_overlap = FALSE) {
     ## if (is.null(databases)) {
     ##     dbs <- c("ChEA 2015", "Epigenomics Roadmap HM ChIP-seq",
     ##      "ENCODE and ChEA Consensus TFs from ChIP-X",
@@ -291,9 +334,7 @@ enrichr <- function(genes, databases = NULL, background = NULL) {
     } else {
         if (!getOption("enrichR.quiet")) cat("Uploading data to Speedrichr...\n")
         uId <- .add_list(genes)$userListId
-	Sys.sleep(1)
 	bId <- .add_background(background)$backgroundid
-	Sys.sleep(1)
 	cat("Getting enrichment results...\n")
         result <- list()
         for(db in dbs) {
@@ -303,6 +344,21 @@ enrichr <- function(genes, databases = NULL, background = NULL) {
             # Rank, Term, P.value, Odds.Ratio, Combined.Score, Genes, Adjusted.P.value, Old.P.value, Old.Adjusted.P.value
             colnames(r) <- c("Rank","Term","P.value","Odds.Ratio","Combined.Score","Genes","Adjusted.P.value","Old.P.value","Old.Adjusted.P.value")
 	    r <- r[,c("Term","Rank","P.value","Adjusted.P.value","Old.P.value","Old.Adjusted.P.value","Odds.Ratio","Combined.Score","Genes")]
+
+            if(isTRUE(include_overlap)) {
+                gmt <- .read_gmt(db)
+                # Count number of annotated genes in each term
+                n_gmt <- sapply(gmt, length)
+
+                # If all terms are found in GMT file, replace 'Rank' column with 'Overlap'
+                if(length(intersect(r$Term, names(n_gmt))) == length(r$Term)) {
+                    annotated <- as.numeric(n_gmt[r$Term])
+                    significant <- nchar(r$Genes) - nchar(gsub(";", "", r$Genes))+1
+                    r$Rank <- paste0(significant, "/", annotated)
+                    colnames(r)[2] <- "Overlap"
+		}
+            }
+
 	    r$P.value <- as.numeric(r$P.value)
 	    r$Adjusted.P.value <- as.numeric(r$Adjusted.P.value)
 	    r$Odds.Ratio <- as.numeric(r$Odds.Ratio)
@@ -320,7 +376,7 @@ enrichr <- function(genes, databases = NULL, background = NULL) {
 }
 
 ## Given a Enrichr output, order and subset criteria, returns a data frame accordingly
-.enrichment_prep_df <- function(df, showTerms, orderBy) {
+.enrichment_prep_df <- function(df, showTerms = 20, orderBy = "P.value") {
 
     if(is.null(showTerms)) {
         showTerms = nrow(df)
@@ -328,12 +384,17 @@ enrichr <- function(genes, databases = NULL, background = NULL) {
         stop(paste0("showTerms '", showTerms, "' is invalid."))
     }
 
-    Annotated <- as.numeric(sub("^\\d+/", "", as.character(df$Overlap)))
-    Significant <- as.numeric(sub("/\\d+$", "", as.character(df$Overlap)))
+    if("Overlap" %in% colnames(df)) {
+        Annotated <- as.numeric(sub("^\\d+/", "", as.character(df$Overlap)))
+        Significant <- as.numeric(sub("/\\d+$", "", as.character(df$Overlap)))
 
-    # Build data frame
-    df <- cbind(df, data.frame(Annotated = Annotated, Significant = Significant,
-                               stringsAsFactors = FALSE))
+        # Build data frame
+        df <- cbind(df, data.frame(Annotated = Annotated, Significant = Significant,
+                                   stringsAsFactors = FALSE))
+    } else {
+        # Count significant genes
+        df$Significant <- nchar(df$Genes) - nchar(gsub(";", "", df$Genes))+1
+    }
 
     # Order data frame (P.value or Combined.Score)
     if(orderBy == "Combined.Score") {
@@ -361,11 +422,15 @@ enrichr <- function(genes, databases = NULL, background = NULL) {
 ##' Default is \code{NULL} to print all terms.
 ##' @param columns (Optional). Columns from each entry of data.
 ##' Default is \code{c(1:9)} to print all columns.
-##' 1-"Term", 2-"Overlap", 3-"P.value", 4-"Adjusted.P.value" 5-"Old.P.value",
-##' 6-"Old.Adjusted.P.value" 7-"Odds.Ratio" 8-"Combined.Score" 9-"Combined.Score"
+##' * Results without background: 1-"Term", 2-"Overlap", 3-"P.value", 
+##' 4-"Adjusted.P.value", 5-"Old.P.value", 6-"Old.Adjusted.P.value", 
+##' 7-"Odds.Ratio", 8-"Combined.Score", 9-"Combined.Score".
+##' * In results with background, the second column is "Rank" if terms are not identical 
+##' with those annotated in the Enrichr GMT files
 ##' @param write2file (Optional). Set to TRUE if you would like this functino to
 ##' output a file
-##' @param outFile (Optional). Output file format, choose from "txt" and "excel". Default is "txt".
+##' @param outFile (Optional). Output file format, choose from "txt" and "excel". 
+##' Default is "txt".
 ##' @return NULL
 ##' @author Wajid Jawaid \email{wj241@alumni.cam.ac.uk}
 ##' @author I-Hsuan Lin \email{i-hsuan.lin@manchester.ac.uk}
@@ -377,8 +442,8 @@ enrichr <- function(genes, databases = NULL, background = NULL) {
 ##'   enrichRLive <- TRUE
 ##'   dbs <- listEnrichrDbs()
 ##'   if(is.null(dbs)) enrichRLive <- FALSE
-##'   dbs <- c("GO_Molecular_Function_2018", "GO_Cellular_Component_2018",
-##'            "GO_Biological_Process_2018")
+##'   dbs <- c("GO_Molecular_Function_2023", "GO_Cellular_Component_2023",
+##'            "GO_Biological_Process_2023")
 ##'   enriched <- enrichr(c("Runx1", "Gfi1", "Gfi1b", "Spi1", "Gata1", "Kdr"), dbs)
 ##'   if (enrichRLive) printEnrich(enriched, write2file = FALSE)
 ##' }
@@ -429,7 +494,8 @@ printEnrich <- function(data, prefix = "enrichr", showTerms = NULL, columns = c(
 ##' Indicates the number characters to keep in the term description.
 ##' @param y (Optional). A character string. Default is \code{"Count"}.
 ##' Indicates the variable that should be mapped to the y-axis.
-##' It can be either \code{"Count"} or \code{"Ratio"}.
+##' It can be either \code{"Count"} or \code{"Ratio"}. 
+##' Results that includes background genes in the analysis can only show \code{"Count"}.
 ##' @param orderBy (Optional). A character string. Default is \code{"P.value"}.
 ##' Indicates how to order the Enrichr results before subsetting to keep top \code{N} terms.
 ##' It can be either \code{"P.value"} or \code{"Combined.Score"}.
@@ -464,10 +530,10 @@ printEnrich <- function(data, prefix = "enrichr", showTerms = NULL, columns = c(
 ##'   dbs <- listEnrichrDbs()
 ##'   enrichRLive <- TRUE
 ##'   if (is.null(dbs)) enrichRLive <- FALSE
-##'   dbs <- c("GO_Molecular_Function_2018", "GO_Cellular_Component_2018",
-##'            "GO_Biological_Process_2018")
+##'   dbs <- c("GO_Molecular_Function_2023", "GO_Cellular_Component_2023",
+##'            "GO_Biological_Process_2023")
 ##'   enriched <- enrichr(c("Runx1", "Gfi1", "Gfi1b", "Spi1", "Gata1", "Kdr"), dbs)
-##'   # Plot top 20 terms from "GO_Biological_Process_2018" and ordered by P-value
+##'   # Plot top 20 terms from "GO_Biological_Process_2023" and ordered by P-value
 ##'   if (enrichRLive) {
 ##'     plotEnrich(enriched[[3]], showTerms = 20, numChar = 50, y = "Count",
 ##'                orderBy = "P.value")
@@ -497,8 +563,6 @@ plotEnrich <- function(df, showTerms = 20, numChar = 40, y = "Count", orderBy = 
         warning("There are duplicated trimmed names in the plot, consider increasing the 'numChar' setting.")
     }
 
-    df$Ratio <- df$Significant/df$Annotated
-
     # Define fill variable (P.value or Combined.Score)
     if(orderBy == "Combined.Score") {
         fill <- "Combined.Score"
@@ -506,8 +570,15 @@ plotEnrich <- function(df, showTerms = 20, numChar = 40, y = "Count", orderBy = 
         fill <- "P.value"
     }
 
-    # Define y variable (Count or Ratio)
-    if(y != "Ratio") {
+    # Define y variable ("Count" or "Ratio")
+    if(y == "Ratio") {
+        if("Overlap" %in% colnames(df)) {
+            df$Ratio <- df$Significant/df$Annotated
+        } else {
+            warning('"Ratio" is not available when analysing with background genes. Plotting with y = "Count" instead.')
+            y <- "Significant"
+        }
+    } else {
         y <- "Significant"
     }
 
