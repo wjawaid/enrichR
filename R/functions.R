@@ -277,25 +277,23 @@ listEnrichrDbs <- function() {
 ##' @importFrom utils read.table
 ##' @export
 ##' @examples
-##' dbs <- listEnrichrDbs()
+##' data(input) # Load example input genes
+##' data(background) # Load example background genes
 ##' dbs <- c("GO_Molecular_Function_2023", "GO_Cellular_Component_2023",
 ##'          "GO_Biological_Process_2023")
-##' enriched <- enrichr(c("Runx1", "Gfi1", "Gfi1b", "Spi1", "Gata1", "Kdr"), dbs)
+##' if (getOption("enrichR.live")) {
+##'   enriched1 <- enrichr(input, dbs)
+##'   print(head(enriched1[[1]]))
+##'
+##'   # Include background
+##'   enriched2 <- enrichr(input, dbs, background = background)
+##'   print(head(enriched2[[1]]))
+##'
+##'   # Include background and add 'Overlap' info
+##'   enriched3 <- enrichr(input, dbs, background = background, include_overlap = TRUE)
+##'   print(head(enriched3[[1]]))
+##' }
 enrichr <- function(genes, databases = NULL, background = NULL, include_overlap = FALSE) {
-    ## if (is.null(databases)) {
-    ##     dbs <- c("ChEA 2015", "Epigenomics Roadmap HM ChIP-seq",
-    ##      "ENCODE and ChEA Consensus TFs from ChIP-X",
-    ##      "TF-LOF Expression from GEO", "ENCODE Histone Modifications 2015",
-    ##      "Transcription Factor PPIs", "KEGG 2016", "WikiPathways 2016", "CORUM",
-    ##      "SILAC Phosphoproteomics", "Humancyc 2016", "NCI-Nature 2016", "Panther 2016",
-    ##      "GO Biological Process 2015", "GO Cellular Component 2015",
-    ##      "GO Molecular Function 2015",
-    ##      "MGI Mammalian Phenotype Level 3", "MGI Mammalian Phenotype Level 4",
-    ##      "Human Phenotype Ontology", "OMIM Disease", "OMIM Expanded",
-    ##      "Mouse Gene Atlas", "Human Gene Atlas", "Cancer Cell Line Encyclopedia",
-    ##      "ESCAPE")
-    ##     databases <- gsub(" ", "_", dbs)
-    ## }
     if (length(genes) < 1) {
         stop("No genes have been given")
     }
@@ -438,13 +436,15 @@ enrichr <- function(genes, databases = NULL, background = NULL, include_overlap 
 ##' @importFrom WriteXLS WriteXLS
 ##' @export
 ##' @examples
+##' data(input) # Load example input genes
 ##' if (getOption("enrichR.live")) {
 ##'   enrichRLive <- TRUE
 ##'   dbs <- listEnrichrDbs()
 ##'   if(is.null(dbs)) enrichRLive <- FALSE
 ##'   dbs <- c("GO_Molecular_Function_2023", "GO_Cellular_Component_2023",
 ##'            "GO_Biological_Process_2023")
-##'   enriched <- enrichr(c("Runx1", "Gfi1", "Gfi1b", "Spi1", "Gata1", "Kdr"), dbs)
+##'   enriched <- enrichr(input, dbs)
+##'   print(head(enriched[[1]]))
 ##'   if (enrichRLive) printEnrich(enriched, write2file = FALSE)
 ##' }
 printEnrich <- function(data, prefix = "enrichr", showTerms = NULL, columns = c(1:9),
@@ -526,18 +526,15 @@ printEnrich <- function(data, prefix = "enrichr", showTerms = NULL, columns = c(
 ##' @importFrom ggplot2 ggtitle
 ##' @export
 ##' @examples
+##' data(input) # Load example input genes
+##' dbs <- c("GO_Molecular_Function_2023", "GO_Cellular_Component_2023",
+##'          "GO_Biological_Process_2023")
 ##' if (getOption("enrichR.live")) {
-##'   dbs <- listEnrichrDbs()
-##'   enrichRLive <- TRUE
-##'   if (is.null(dbs)) enrichRLive <- FALSE
-##'   dbs <- c("GO_Molecular_Function_2023", "GO_Cellular_Component_2023",
-##'            "GO_Biological_Process_2023")
-##'   enriched <- enrichr(c("Runx1", "Gfi1", "Gfi1b", "Spi1", "Gata1", "Kdr"), dbs)
+##'   enriched <- enrichr(input, dbs)
+##'   print(head(enriched[[1]]))
 ##'   # Plot top 20 terms from "GO_Biological_Process_2023" and ordered by P-value
-##'   if (enrichRLive) {
-##'     plotEnrich(enriched[[3]], showTerms = 20, numChar = 50, y = "Count",
-##'                orderBy = "P.value")
-##'   }
+##'   plotEnrich(enriched[[3]], showTerms = 20, numChar = 50, y = "Count",
+##'              orderBy = "P.value")
 ##' }
 plotEnrich <- function(df, showTerms = 20, numChar = 40, y = "Count", orderBy = "P.value",
                        xlab = NULL, ylab = NULL, title = NULL) {

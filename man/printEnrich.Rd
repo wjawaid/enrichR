@@ -42,13 +42,15 @@ Print Enrichr results
 Print Enrichr results from the selected gene-set libraries to individual text files.
 }
 \examples{
+data(input) # Load example input genes
 if (getOption("enrichR.live")) {
   enrichRLive <- TRUE
   dbs <- listEnrichrDbs()
   if(is.null(dbs)) enrichRLive <- FALSE
   dbs <- c("GO_Molecular_Function_2023", "GO_Cellular_Component_2023",
            "GO_Biological_Process_2023")
-  enriched <- enrichr(c("Runx1", "Gfi1", "Gfi1b", "Spi1", "Gata1", "Kdr"), dbs)
+  enriched <- enrichr(input, dbs)
+  print(head(enriched[[1]]))
   if (enrichRLive) printEnrich(enriched, write2file = FALSE)
 }
 }

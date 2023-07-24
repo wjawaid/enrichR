@@ -33,10 +33,22 @@ Gene enrichment using Enrichr
 Gene enrichment using Enrichr, also, you can now try adding a background.
 }
 \examples{
-dbs <- listEnrichrDbs()
+data(input) # Load example input genes
+data(background) # Load example background genes
 dbs <- c("GO_Molecular_Function_2023", "GO_Cellular_Component_2023",
          "GO_Biological_Process_2023")
-enriched <- enrichr(c("Runx1", "Gfi1", "Gfi1b", "Spi1", "Gata1", "Kdr"), dbs)
+if (getOption("enrichR.live")) {
+  enriched1 <- enrichr(input, dbs)
+  print(head(enriched1[[1]]))
+
+  # Include background
+  enriched2 <- enrichr(input, dbs, background = background)
+  print(head(enriched2[[1]]))
+
+  # Include background and add 'Overlap' info
+  enriched3 <- enrichr(input, dbs, background = background, include_overlap = TRUE)
+  print(head(enriched3[[1]]))
+}
 }
 \author{
 Wajid Jawaid \email{wj241@alumni.cam.ac.uk}
