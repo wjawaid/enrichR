@@ -335,7 +335,7 @@ enrichr <- function(genes, databases = NULL, background = NULL, include_overlap 
 	bId <- .add_background(background)$backgroundid
 	cat("Getting enrichment results...\n")
         result <- list()
-        for(db in dbs) {
+        for(db in databases) {
             res <- .get_backgroundenrich(uId, bId, db)
 
 	    r <- as.data.frame(do.call(rbind, (lapply(res[[db]], function(i) { i[[6]] <- paste(i[[6]], collapse = ";"); unlist(i) }))))
@@ -368,7 +368,7 @@ enrichr <- function(genes, databases = NULL, background = NULL, include_overlap 
     }
     options(stringsAsFactors = dfSAF)
     if (!getOption("enrichR.quiet")) cat("Parsing results... ")
-    names(result) <- dbs
+    names(result) <- databases
     if (!getOption("enrichR.quiet")) cat("Done.\n")
     return(result)
 }
