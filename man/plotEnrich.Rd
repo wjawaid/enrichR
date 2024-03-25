@@ -29,7 +29,12 @@ It can be either \code{"Count"} or \code{"Ratio"}.}
 
 \item{orderBy}{(Optional). A character string. Default is \code{"P.value"}.
 Indicates how to order the Enrichr results before subsetting to keep top \code{N} terms.
-It can be either \code{"P.value"} or \code{"Combined.Score"}.}
+It can be one of these:
+\itemize{
+\item \code{"P.value"}
+\item \code{"Adjusted.P.value"} (or \code{"FDR"})
+\item \code{"Combined.Score"} (or \code{"Score"})
+}}
 
 \item{xlab}{(Optional). A character string. Default is \code{NULL}.
 Indicates the x-axis label.}
