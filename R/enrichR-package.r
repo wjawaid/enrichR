@@ -4,9 +4,8 @@
 #'
 #' @name enrichR-package
 #' @author Wajid Jawaid \email{wj241@alumni.cam.ac.uk}
-#' @docType package
-#' @keywords package
-NULL
+#' @keywords internal
+"_PACKAGE"
 
 #' 790 gene symbols
 #'

@@ -4,10 +4,7 @@
 \alias{listEnrichrSites}
 \title{List Enrichr Websites}
 \usage{
-listEnrichrSites(...)
-}
-\arguments{
-\item{...}{(Optional  Additional parameters)}
+listEnrichrSites()
 }
 \value{
 print Enrichr Website status
