@@ -351,7 +351,7 @@ printEnrich <- function(data, prefix = "enrichr", showTerms = NULL, columns = c(
 ##' Indicates the y-axis label.
 ##' @param title (Optional). A character string. Default is \code{NULL}
 ##' Indicates the main title for the graphic.
-##' @return A \code{\link{ggplot}}2 plot object
+##' @return A \code{\link[ggplot2]{ggplot}} plot object
 ##' @author I-Hsuan Lin \email{i-hsuan.lin@manchester.ac.uk}
 ##' @seealso
 ##' \code{\link[ggplot2]{ggplot}}
