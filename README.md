@@ -126,7 +126,7 @@ plotEnrich(enriched[[3]], showTerms = 20, numChar = 40, y = "Count", orderBy = "
 Kuleshov, Maxim V., Matthew R. Jones, Andrew D. Rouillard, Nicolas F.
 Fernandez, Qiaonan Duan, Zichen Wang, Simon Koplev, et al. 2016.
 “[Enrichr: A Comprehensive Gene Set Enrichment Analysis Web Server 2016
-Update](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4987924).” *Nucleic
+Update](https://pmc.ncbi.nlm.nih.gov/articles/PMC4987924/).” *Nucleic
 Acids Res* 44 (Web Server issue): W90–97.
 
 </div>
