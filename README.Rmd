@@ -4,7 +4,9 @@ author: "Wajid Jawaid"
 email: "wj241@alumni.cam.ac.uk"
 date: "`r Sys.Date()`"
 bibliography: ./vignettes/enrichr.bib
-output: github_document
+output:
+  github_document:
+    html_preview: false
 ---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
@@ -46,13 +48,17 @@ install.packages("enrichR")
 
 By default human genes are selected otherwise select your organism of choice. (This functionality was contributed by Alexander Blume)
 
+## Initialising connection to Enrichr website
+
 ```{r, echo = TRUE, eval = TRUE}
 library(enrichR)
 listEnrichrSites()
 setEnrichrSite("Enrichr") # Human genes
 ```
 
-Then find the list of all available databases from Enrichr.
+## Select gene-set libraries
+
+List all available databases from Enrichr.
 
 ```{r, echo = TRUE, eval = TRUE}
 dbs <- listEnrichrDbs()
@@ -63,40 +69,107 @@ head(dbs)
 ```
 
 ```{r, echo = FALSE, results='asis'}
-library(knitr)
-kable(head(dbs[c(1:6),-4]))
+knitr::kable(head(dbs[c(1:6),-4]))
 ```
 
-View and select your favourite databases. Then query enrichr, in this case I have used genes associated with embryonic haematopoiesis.
+Select the 2023 GO databases.
 
 ```{r, echo = TRUE, eval = TRUE}
-dbs <- c("GO_Molecular_Function_2015", "GO_Cellular_Component_2015", "GO_Biological_Process_2015")
-enriched <- enrichr(c("Runx1", "Gfi1", "Gfi1b", "Spi1", "Gata1", "Kdr"), dbs)
+dbs <- c("GO_Molecular_Function_2023", "GO_Cellular_Component_2023",
+         "GO_Biological_Process_2023")
 ```
 
-Now view the results table.
+## Perform analysis
 
-```{r, echo = TRUE, eval = FALSE}
-enriched[["GO_Biological_Process_2015"]]
+### Without background
+
+Query with `enrichr` using genes available from the package.
+
+```{r, echo = TRUE, eval = TRUE}
+# Load example input genes
+data(input)
+length(input)
+head(input)
+
+enriched <- enrichr(input, dbs)
 ```
 
-You can give many genes.
+Now view the `"GO_Biological_Process_2023"` results from `enriched`.
+
 ```{r, echo = TRUE, eval = FALSE}
-data(genes790)
-length(genes790)
-head(enrichr(genes790, c('LINCS_L1000_Chem_Pert_up'))[[1]])
+head(enriched[["GO_Biological_Process_2023"]])
 ```
 
 ```{r, echo = FALSE, results = 'asis'}
-x <- head(enriched[["GO_Biological_Process_2015"]])
-x[,1] <- gsub("GO:", "GO_", x[,1])
-kable(x)
+x <- head(enriched[["GO_Biological_Process_2023"]])
+x[,1] <- gsub(":", "&#58;", x[,1])
+knitr::kable(x)
 ```
 
-Plot Enrichr GO-BP output. (Plotting function contributed by I-Hsuan Lin)
+### With background
 
-```{r, echo = TRUE, eval = TRUE, fig.width = 8, fig.height = 6, fig.align = "center", dpi = 100}
-plotEnrich(enriched[[3]], showTerms = 20, numChar = 40, y = "Count", orderBy = "P.value")
+You can now try adding a background to `enrichr`.
+
+```{r, echo = TRUE, eval = TRUE}
+# Load example background
+data(background)
+length(background)
+head(background)
+
+enriched2 <- enrichr(input, dbs, background = background)
+```
+
+Now view the `"GO_Biological_Process_2023"` results from `enriched2`.
+
+```{r, echo = TRUE, eval = FALSE}
+head(enriched2[["GO_Biological_Process_2023"]])
+```
+
+```{r, echo = FALSE, results = 'asis'}
+x <- head(enriched2[["GO_Biological_Process_2023"]])
+x[,1] <- gsub(":", "&#58;", x[,1])
+knitr::kable(x)
+```
+
+By default, the results table from analysis with a background does not have the 'Overlap' column.
+We can calculate the annotated genes in each term from GMT files and
+replace the 'Rank' column with 'Overlap' by setting `include_overlap = TRUE`.
+
+```{r, echo = TRUE, eval = TRUE}
+enriched3 <- enrichr(input, dbs, background = background, include_overlap = TRUE)
+```
+
+Now view the `"GO_Biological_Process_2023"` results from `enriched3`.
+
+```{r, echo = TRUE, eval = FALSE}
+head(enriched3[["GO_Biological_Process_2023"]])
+```
+
+```{r, echo = FALSE, results = 'asis'}
+x <- head(enriched3[["GO_Biological_Process_2023"]])
+x[,1] <- gsub(":", "&#58;", x[,1])
+knitr::kable(x)
+```
+
+## Visualise results
+
+Plot Enrichr `GO_Biological_Process_2023` output. (Plotting function contributed by I-Hsuan Lin)
+
+```{r, echo = TRUE, eval = TRUE, fig.width = 8, fig.height = 5, fig.align = "center", dpi = 100}
+plotEnrich(enriched[["GO_Biological_Process_2023"]], showTerms = 20, numChar = 40, 
+	   y = "Count", orderBy = "P.value")
+```
+
+## Export results
+
+Export results to text files or Excel.
+
+```{r, echo = TRUE, eval = FALSE}
+# To text files
+printEnrich(enriched)
+
+# To Excel
+printEnrich(enriched, outFile = "excel")
 ```
 
 Save Enrichr results as text or Excel files. By default (i.e. `outFile="txt"`), the results from the
