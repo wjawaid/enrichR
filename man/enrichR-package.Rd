@@ -2,6 +2,7 @@
 % Please edit documentation in R/enrichR-package.r
 \docType{package}
 \name{enrichR-package}
+\alias{enrichR}
 \alias{enrichR-package}
 \title{enrichR package}
 \description{
@@ -10,4 +11,4 @@ The enrichR package provides an R interface to all enrichR (https://maayanlab.cl
 \author{
 Wajid Jawaid \email{wj241@alumni.cam.ac.uk}
 }
-\keyword{package}
+\keyword{internal}

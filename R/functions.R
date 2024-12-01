@@ -21,20 +21,37 @@
     packageStartupMessage("Welcome to enrichR\nChecking connection ... ", appendLF = TRUE)
     options(modEnrichR.use = TRUE)
     options(enrichR.sites = c("Enrichr", "FlyEnrichr", "WormEnrichr", "YeastEnrichr", "FishEnrichr", "OxEnrichr"))
-    if (has_internet()) {
+
+    opts <- .proxyOpts()
+    if (has_internet() || !is.null(opts)) {
         if (getOption("modEnrichR.use")) {
             listEnrichrSites()
         } else {
             getEnrichr(url = paste0(getOption("enrichR.base.address"), "datasetStatistics"))
             packageStartupMessage("Enrichr ... ", appendLF = FALSE)
-            if (getOption("enrichR.live")) packageStartupMessage("Connection is Live!")
+            msg <- if(is.null(opts)) "Connection is Live!" else "Connection is Live! Using proxy."
+            if (getOption("enrichR.live")) packageStartupMessage(msg)
         }
     } else {
-        packageStartupMessage("No internet connection could be found.")
+        packageStartupMessage("No internet connection could be found. Set 'RCurlOptions' if proxy is needed")
         options(enrichR.live = FALSE)
     }
 }
 
+## Internal function to check RCurlOptions
+.proxyOpts <- function() {
+    opts <- getOption("RCurlOptions")
+    if(is.null(opts) || is.null(opts[["proxy"]])) {
+        return(NULL)
+    } else {
+        url <- opts[["proxy"]]
+        port <- opts[["proxyport"]]
+        username <- opts[["proxyusername"]]
+        password <- opts[["proxypassword"]]
+        auth <- if(!is.null(opts[["proxyauth"]])) opts[["proxyauth"]] else "basic"
+        return(c(url = url, port = port, username = username, password = password, auth = auth))
+    }
+}
 
 ##' Helper function
 ##'
@@ -50,11 +67,18 @@
 ##' @importFrom httr POST
 ##' @importFrom httr status_code
 ##' @importFrom httr http_status
-getEnrichr <- function(method = "GET", url, ...) {
-    if(!method %in% c("GET","POST")) stop("Support GET and POST only.")
+##' @importFrom httr use_proxy
+getEnrichr <- function(url, ...) {
     options(enrichR.live = FALSE)
     tryCatch({
-        x <- if(method == "GET") GET(url = url, ...) else POST(url = url, ...)
+        opts <- .proxyOpts()
+        if(is.null(opts)) {
+            x <- GET(url = url, ...)
+	} else {
+            x <- GET(url = url, use_proxy(url = opts['url'], port = as.numeric(opts['port']),
+                                          username = opts['username'], password = opts['password'],
+                                          auth = opts['auth']), ...)
+	}
         code <- status_code(x)
         if(code != 200) {
             # Error with status code
@@ -84,16 +108,17 @@ getEnrichr <- function(method = "GET", url, ...) {
 ##' @title List Enrichr Websites
 ##' @return print Enrichr Website status
 ##' @author Alexander Blume
-##' @param ... (Optional  Additional parameters)
 ##' @export
-listEnrichrSites <- function(...) {
+listEnrichrSites <- function() {
+    opts <- .proxyOpts()
+    msg <- if(is.null(opts)) "Connection is Live!" else "Connection is Live! Using proxy."
     for (site in getOption("enrichR.sites")) {
         getEnrichr(url = paste0(getOption("enrichR.sites.base.address"), site, "/", "datasetStatistics"))
         packageStartupMessage(paste0(site, " ... "), appendLF = FALSE)
         if (paste0(getOption("enrichR.sites.base.address"), site, "/")  == getOption("enrichR.base.address")) {
-            if (getOption("enrichR.live")) packageStartupMessage("Connection is Live!")
+            if (getOption("enrichR.live")) packageStartupMessage(msg)
         } else 
-            if (getOption("enrichR.live")) packageStartupMessage("Connection is Live!")
+            if (getOption("enrichR.live")) packageStartupMessage(msg)
     }
 }
 
@@ -106,6 +131,8 @@ listEnrichrSites <- function(...) {
 ##' @author Alexander Blume
 ##' @export
 setEnrichrSite <- function(site) {
+    opts <- .proxyOpts()
+    msg <- if(is.null(opts)) "Connection is Live!" else "Connection is Live! Using proxy."
     site <- gsub(getOption("enrichR.sites.base.address"), "", site)
     matched <- grep(paste0("^",site),
                     getOption("enrichR.sites"),
@@ -119,10 +146,11 @@ setEnrichrSite <- function(site) {
         message(paste("-", getOption("enrichR.sites")[matched], "\n"),)
     } else {
         site <- getOption("enrichR.sites")[matched]
-        options(enrichR.base.address = paste0(getOption("enrichR.sites.base.address"),site, "/"))
-        message("Connection changed to ",paste0(getOption("enrichR.sites.base.address"),site, "/"))
-        getEnrichr(url = paste0(getOption("enrichR.base.address"), "datasetStatistics"))
-        if (getOption("enrichR.live")) message("Connection is Live!")
+
+        options(enrichR.base.address = paste0(getOption("enrichR.sites.base.address"),site,"/"))
+        message("Connection changed to ",paste0(getOption("enrichR.sites.base.address"),site,"/"))
+        getEnrichr(url = paste0(getOption("enrichR.base.address"),"datasetStatistics"))
+        if (getOption("enrichR.live")) message(msg)
     }
 }
 
@@ -139,7 +167,7 @@ setEnrichrSite <- function(site) {
 listEnrichrDbs <- function() {
     dfSAF <- getOption("stringsAsFactors", FALSE)
     options(stringsAsFactors = FALSE)
-    dbs <- getEnrichr(url = paste0(getOption("enrichR.base.address"), "datasetStatistics"))
+    dbs <- getEnrichr(url = paste0(getOption("enrichR.base.address"), "datasetStatistics"), ...)
     if (!getOption("enrichR.live")) return()
     dbs <- intToUtf8(dbs$content)
     dbs <- fromJSON(dbs)
@@ -273,6 +301,8 @@ listEnrichrDbs <- function() {
 ##' in the resulting data.frame when analysing with a background. Default is \code{"FALSE"}.
 ##' @return Returns a list of data.frame of enrichment terms, p-values, ...
 ##' @author Wajid Jawaid \email{wj241@alumni.cam.ac.uk}
+##' @importFrom httr POST
+##' @importFrom httr use_proxy
 ##' @importFrom rjson fromJSON
 ##' @importFrom utils read.table
 ##' @export
@@ -303,11 +333,33 @@ enrichr <- function(genes, databases = NULL, background = NULL, include_overlap 
     if (is.null(databases)) {
         stop("No databases have been provided")
     }
-    if(!is.null(background)) {
-        if(basename(base.address) != "Enrichr") {
-            warning("Enrichment analysis with background genes is only supported on the main site\nSwitching to 'Enrichr'")
-            setEnrichrSite("Enrichr")
-	} else if(!is.vector(background) | all(background == "") | length(background) == 0) stop("'background' is invalid")
+
+    if (!getOption("enrichR.quiet")) cat("Uploading data to Enrichr... ")
+    opts <- .proxyOpts()
+    if (is.vector(genes) & ! all(genes == "") & length(genes) != 0) {
+        if(is.null(opts)) {
+            temp <- POST(url=paste0(getOption("enrichR.base.address"), "enrich"),
+                         body=list(list=paste(genes, collapse="\n")))
+	} else {
+            temp <- POST(url=paste0(getOption("enrichR.base.address"), "enrich"),
+                         body=list(list=paste(genes, collapse="\n")),
+			 use_proxy(url = opts['url'], port = as.numeric(opts['port']),
+				   username = opts['username'], password = opts['password'], auth = opts['auth']))
+	}
+    } else if (is.data.frame(genes)) {
+        if(is.null(opts)) {
+            temp <- POST(url=paste0(getOption("enrichR.base.address"), "enrich"),
+                         body=list(list=paste(paste(genes[,1], genes[,2], sep=","),
+                                              collapse="\n")))
+	} else {
+            temp <- POST(url=paste0(getOption("enrichR.base.address"), "enrich"),
+                         body=list(list=paste(paste(genes[,1], genes[,2], sep=","),
+                                              collapse="\n")),
+                         use_proxy(url = opts['url'], port = as.numeric(opts['port']),
+				   username = opts['username'], password = opts['password'], auth = opts['auth']))
+	}
+    } else {
+        warning("genes must be a non-empty vector of gene names or a data.frame with genes and score.")
     }
     dfSAF <- getOption("stringsAsFactors", FALSE)
     options(stringsAsFactors = FALSE)

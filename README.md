@@ -235,7 +235,24 @@ and Kai Hu)
 printEnrich(enriched)
 ```
 
-# References
+
+## Using `enrichR` behind a proxy
+
+If your computer is behind an HTTP or HTTPS proxy,
+you can set the RCurl Proxy options explicitly using `RCurlOptions` and
+enrichR will use the provided settings to connect to the Enrichr database via `httr::use_proxy()`.
+
+For example:
+
+``` r
+options(RCurlOptions = list(proxy = 'http://ip_or_url',
+                            proxyusername = 'myuser',
+                            proxypassword = 'mypwd',
+                            proxyport = 'port_num',
+                            proxyauth = 'basic'))
+```
+
+# References2
 
 <div id="refs" class="references csl-bib-body hanging-indent">
 
