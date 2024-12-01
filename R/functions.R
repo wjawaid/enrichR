@@ -355,7 +355,12 @@ printEnrich <- function(data, prefix = "enrichr", showTerms = NULL, columns = c(
 ##' It can be either \code{"Count"} or \code{"Ratio"}.
 ##' @param orderBy (Optional). A character string. Default is \code{"P.value"}.
 ##' Indicates how to order the Enrichr results before subsetting to keep top \code{N} terms.
-##' It can be either \code{"P.value"} or \code{"Combined.Score"}.
+##' It can be one of these:
+##' \itemize{
+##' \item \code{"P.value"}
+##' \item \code{"Adjusted.P.value"} (or \code{"FDR"})
+##' \item \code{"Combined.Score"} (or \code{"Score"})
+##' }
 ##' @param xlab (Optional). A character string. Default is \code{NULL}.
 ##' Indicates the x-axis label.
 ##' @param ylab (Optional). A character string. Default is \code{NULL}.
@@ -408,6 +413,14 @@ plotEnrich <- function(df, showTerms = 20, numChar = 40, y = "Count", orderBy = 
         stop(paste0("numChar '", numChar, "' is invalid."))
     }
 
+    if(orderBy == "Adjusted.P.value" | orderBy == "FDR") {
+        orderBy = "Adjusted.P.value"
+    } else if(orderBy == "Combined.Score" | orderBy == "Score") {
+        orderBy = "Combined.Score"
+    } else {
+        orderBy = "P.value"
+    }
+
     df <- .enrichment_prep_df(df, showTerms, orderBy)
 
     # Create trimmed name (as seen in topGO)
@@ -422,20 +435,13 @@ plotEnrich <- function(df, showTerms = 20, numChar = 40, y = "Count", orderBy = 
 
     df$Ratio <- df$Significant/df$Annotated
 
-    # Define fill variable (P.value or Combined.Score)
-    if(orderBy == "Combined.Score") {
-        fill <- "Combined.Score"
-    } else {
-        fill <- "P.value"
-    }
-
     # Define y variable (Count or Ratio)
     if(y != "Ratio") {
         y <- "Significant"
     }
 
     # Define variable mapping
-    map <- aes_string(x = "Term", y = y, fill = fill)
+    map <- aes_string(x = "Term", y = y, fill = orderBy)
 
     # Define labels
     if(is.null(xlab)) {
@@ -462,8 +468,14 @@ plotEnrich <- function(df, showTerms = 20, numChar = 40, y = "Count", orderBy = 
         p <- p + scale_fill_continuous(low = "blue", high = "red") +
                 guides(fill = guide_colorbar(title = "Combined Score", reverse = FALSE))
     } else {
-        p <- p + scale_fill_continuous(low = "red", high = "blue") +
-                guides(fill = guide_colorbar(title = "P value", reverse = TRUE))
+        p <- p + scale_fill_continuous(low = "red", high = "blue")
+        if(orderBy == "Adjusted.P.value") {
+            p <- p + guides(fill = guide_colorbar(title = expression(atop("Adjusted", paste(italic("P")," value")),
+						  reverse = FALSE), title.vjust = 0.1))
+	} else {
+            p <- p + guides(fill = guide_colorbar(title = expression(paste(italic("P")," value")),
+						  reverse = FALSE))
+	}
     }
 
     # Adjust theme components
