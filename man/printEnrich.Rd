@@ -9,8 +9,8 @@ printEnrich(
   prefix = "enrichr",
   showTerms = NULL,
   columns = c(1:9),
-  write2file = TRUE,
-  outFile = c("txt", "excel")
+  outFile = c("txt", "excel"),
+  write2file = NULL
 )
 }
 \arguments{
@@ -29,17 +29,18 @@ Default is \code{c(1:9)} to print all columns.
 * In results with background, the second column is "Rank" if terms are not identical 
 with those annotated in the Enrichr GMT files}
 
-\item{write2file}{(Optional). Set to TRUE if you would like this functino to
-output a file}
-
 \item{outFile}{(Optional). Output file format, choose from "txt" and "excel". 
 Default is "txt".}
+
+\item{write2file}{(Optional). Deprecated argument. Always print to text or Excel file(s).}
+
 }
 \description{
 Print Enrichr results
 }
 \details{
-Print Enrichr results from the selected gene-set libraries to individual text files.
+Print Enrichr results from the selected gene-set libraries to individual text files 
+or a Excel spreadsheet.
 }
 \examples{
 data(input) # Load example input genes
@@ -47,11 +48,13 @@ if (getOption("enrichR.live")) {
   enrichRLive <- TRUE
   dbs <- listEnrichrDbs()
   if(is.null(dbs)) enrichRLive <- FALSE
+
   dbs <- c("GO_Molecular_Function_2023", "GO_Cellular_Component_2023",
            "GO_Biological_Process_2023")
   enriched <- enrichr(input, dbs)
   print(head(enriched[[1]]))
   if (enrichRLive) printEnrich(enriched, write2file = FALSE)
+
 }
 }
 \author{

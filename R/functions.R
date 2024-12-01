@@ -412,7 +412,8 @@ enrichr <- function(genes, databases = NULL, background = NULL, include_overlap 
 
 ##' Print Enrichr results
 ##'
-##' Print Enrichr results from the selected gene-set libraries to individual text files.
+##' Print Enrichr results from the selected gene-set libraries to individual text files 
+##' or a Excel spreadsheet.
 ##' @title printEnrich
 ##' @param data (Required). Output list object from the \code{"enrichr"} function.
 ##' @param prefix (Optional). Prefix of output file. Default is \code{"enrichr"}.
@@ -441,6 +442,7 @@ enrichr <- function(genes, databases = NULL, background = NULL, include_overlap 
 ##'   enrichRLive <- TRUE
 ##'   dbs <- listEnrichrDbs()
 ##'   if(is.null(dbs)) enrichRLive <- FALSE
+
 ##'   dbs <- c("GO_Molecular_Function_2023", "GO_Cellular_Component_2023",
 ##'            "GO_Biological_Process_2023")
 ##'   enriched <- enrichr(input, dbs)
@@ -448,17 +450,26 @@ enrichr <- function(genes, databases = NULL, background = NULL, include_overlap 
 ##'   if (enrichRLive) printEnrich(enriched, write2file = FALSE)
 ##' }
 printEnrich <- function(data, prefix = "enrichr", showTerms = NULL, columns = c(1:9),
-                        write2file = TRUE, outFile = c("txt", "excel")) {
+                        outFile = c("txt","excel"), write2file = NULL) {
     if (!is.list(data)) stop("data is malformed must be a list")
-    if (!is.numeric(columns)) {
-        stop(paste0("columns '", columns, "' is invalid."))
+    if (!is.integer(columns)) {
+        stop(sprintf("'columns=' (%s) is invalid, must be a positive integer vector", 
+                     paste(shQuote(columns), collapse = ",")))
     }
-		outFile <- match.arg(outFile)
-		if (outFile == "excel") {
-			filename <- paste0(prefix, ".xlsx")
-			output_excel_df = vector("list", length(data))
-		}
-		
+
+    outFile <- match.arg(outFile)
+    if (outFile == "excel") {
+        filename <- paste0(prefix, ".xlsx")
+        output_excel_df <- vector("list", length(data))
+        sheetnames <- names(data)
+    } else {
+        filenames <- paste0(prefix, "_", names(data), ".txt")
+    }
+
+    if (!is.null(write2file)) {
+        .Deprecated(msg = "'write2file=' is deprecated and will be ignored")
+    }
+
     for (i in 1:length(data)) {
         dbname <- names(data)[i]
         df <- data[[i]]
@@ -469,19 +480,20 @@ printEnrich <- function(data, prefix = "enrichr", showTerms = NULL, columns = c(
 
         if(any(columns > ncol(df))) {
             stop("Undefined columns selected")
+        } else {
+            df <- df[,columns]
         }
-        if (write2file) {
-            if (outFile == "txt") {
-                filename <- paste0(prefix, "_", dbname, ".txt")
-                write.table(df, file = filename, sep = "\t", quote = F, row.names = F, col.names = T)
-            } else {
-                output_excel_df[[i]] <- df
-                if (i == length(data)) {
-                    WriteXLS(output_excel_df, ExcelFileName = filename, SheetNames = names(data))
-                }
+
+        if (outFile == "excel") {
+            output_excel_df[[i]] <- df
+            if (i == length(data)) {
+                WriteXLS(output_excel_df, ExcelFileName = filename, SheetNames = sheetnames)
             }
+        } else {
+            write.table(df, file = filenames[i], sep = "\t", quote = F, row.names = F, col.names = T)
         }
     }
+    message(sprintf("Output results in '%s' format", outFile))
 }
 
 ##' Visualise a Enrichr output as barplot

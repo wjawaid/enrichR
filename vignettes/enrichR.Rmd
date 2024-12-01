@@ -181,6 +181,7 @@ printEnrich(enriched)
 
 # To Excel
 printEnrich(enriched, outFile = "excel")
+
 ```
 
 # References
