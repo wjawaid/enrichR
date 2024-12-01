@@ -25,11 +25,17 @@ Indicates the number characters to keep in the term description.}
 
 \item{y}{(Optional). A character string. Default is \code{"Count"}.
 Indicates the variable that should be mapped to the y-axis.
-It can be either \code{"Count"} or \code{"Ratio"}.}
+It can be either \code{"Count"} or \code{"Ratio"}. 
+Results that includes background genes in the analysis can only show \code{"Count"}.}
 
 \item{orderBy}{(Optional). A character string. Default is \code{"P.value"}.
 Indicates how to order the Enrichr results before subsetting to keep top \code{N} terms.
-It can be either \code{"P.value"} or \code{"Combined.Score"}.}
+It can be one of these:
+\itemize{
+\item \code{"P.value"}
+\item \code{"Adjusted.P.value"} (or \code{"FDR"})
+\item \code{"Combined.Score"} (or \code{"Score"})
+}}
 
 \item{xlab}{(Optional). A character string. Default is \code{NULL}.
 Indicates the x-axis label.}
@@ -50,18 +56,15 @@ Visualise a Enrichr output as barplot
 Visualise Enrichr result from a selected gene-set library as barplot.
 }
 \examples{
+data(input) # Load example input genes
+dbs <- c("GO_Molecular_Function_2023", "GO_Cellular_Component_2023",
+         "GO_Biological_Process_2023")
 if (getOption("enrichR.live")) {
-  dbs <- listEnrichrDbs()
-  enrichRLive <- TRUE
-  if (is.null(dbs)) enrichRLive <- FALSE
-  dbs <- c("GO_Molecular_Function_2018", "GO_Cellular_Component_2018",
-           "GO_Biological_Process_2018")
-  enriched <- enrichr(c("Runx1", "Gfi1", "Gfi1b", "Spi1", "Gata1", "Kdr"), dbs)
-  # Plot top 20 terms from "GO_Biological_Process_2018" and ordered by P-value
-  if (enrichRLive) {
-    plotEnrich(enriched[[3]], showTerms = 20, numChar = 50, y = "Count",
-               orderBy = "P.value")
-  }
+  enriched <- enrichr(input, dbs)
+  print(head(enriched[[1]]))
+  # Plot top 20 terms from "GO_Biological_Process_2023" and ordered by P-value
+  plotEnrich(enriched[[3]], showTerms = 20, numChar = 50, y = "Count",
+             orderBy = "P.value")
 }
 }
 \seealso{

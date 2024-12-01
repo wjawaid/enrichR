@@ -9,8 +9,8 @@ printEnrich(
   prefix = "enrichr",
   showTerms = NULL,
   columns = c(1:9),
-  write2file = TRUE,
-  outFile = c("txt", "excel")
+  outFile = c("txt", "excel"),
+  write2file = NULL
 )
 }
 \arguments{
@@ -23,29 +23,38 @@ Default is \code{NULL} to print all terms.}
 
 \item{columns}{(Optional). Columns from each entry of data.
 Default is \code{c(1:9)} to print all columns.
-1-"Term", 2-"Overlap", 3-"P.value", 4-"Adjusted.P.value" 5-"Old.P.value",
-6-"Old.Adjusted.P.value" 7-"Odds.Ratio" 8-"Combined.Score" 9-"Combined.Score"}
+* Results without background: 1-"Term", 2-"Overlap", 3-"P.value", 
+4-"Adjusted.P.value", 5-"Old.P.value", 6-"Old.Adjusted.P.value", 
+7-"Odds.Ratio", 8-"Combined.Score", 9-"Combined.Score".
+* In results with background, the second column is "Rank" if terms are not identical 
+with those annotated in the Enrichr GMT files}
 
-\item{write2file}{(Optional). Set to TRUE if you would like this functino to
-output a file}
+\item{outFile}{(Optional). Output file format, choose from "txt" and "excel". 
+Default is "txt".}
 
-\item{outFile}{(Optional). Output file format, choose from "txt" and "excel". Default is "txt".}
+\item{write2file}{(Optional). Deprecated argument. Always print to text or Excel file(s).}
+
 }
 \description{
 Print Enrichr results
 }
 \details{
-Print Enrichr results from the selected gene-set libraries to individual text files.
+Print Enrichr results from the selected gene-set libraries to individual text files 
+or a Excel spreadsheet.
 }
 \examples{
+data(input) # Load example input genes
 if (getOption("enrichR.live")) {
   enrichRLive <- TRUE
   dbs <- listEnrichrDbs()
   if(is.null(dbs)) enrichRLive <- FALSE
-  dbs <- c("GO_Molecular_Function_2018", "GO_Cellular_Component_2018",
-           "GO_Biological_Process_2018")
-  enriched <- enrichr(c("Runx1", "Gfi1", "Gfi1b", "Spi1", "Gata1", "Kdr"), dbs)
+
+  dbs <- c("GO_Molecular_Function_2023", "GO_Cellular_Component_2023",
+           "GO_Biological_Process_2023")
+  enriched <- enrichr(input, dbs)
+  print(head(enriched[[1]]))
   if (enrichRLive) printEnrich(enriched, write2file = FALSE)
+
 }
 }
 \author{
