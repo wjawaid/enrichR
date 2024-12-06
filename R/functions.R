@@ -167,7 +167,7 @@ setEnrichrSite <- function(site) {
 listEnrichrDbs <- function() {
     dfSAF <- getOption("stringsAsFactors", FALSE)
     options(stringsAsFactors = FALSE)
-    dbs <- getEnrichr(url = paste0(getOption("enrichR.base.address"), "datasetStatistics"), ...)
+    dbs <- getEnrichr(url = paste0(getOption("enrichR.base.address"), "datasetStatistics"))
     if (!getOption("enrichR.live")) return()
     dbs <- intToUtf8(dbs$content)
     dbs <- fromJSON(dbs)
