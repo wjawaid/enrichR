@@ -52,7 +52,9 @@ By default human genes are selected otherwise select your organism of choice. (T
 
 ```{r, echo = TRUE, eval = TRUE}
 library(enrichR)
+
 listEnrichrSites()
+
 setEnrichrSite("Enrichr") # Human genes
 ```
 
@@ -83,7 +85,7 @@ dbs <- c("GO_Molecular_Function_2023", "GO_Cellular_Component_2023",
 
 ### Without background
 
-Query with `enrichr` using genes available from the package.
+Query with `enrichr()` using example genes available from the package.
 
 ```{r, echo = TRUE, eval = TRUE}
 # Load example input genes
@@ -94,7 +96,7 @@ head(input)
 enriched <- enrichr(input, dbs)
 ```
 
-Now view the `"GO_Biological_Process_2023"` results from `enriched`.
+Now view the `"GO_Biological_Process_2023"` results from the `enriched` object.
 
 ```{r, echo = TRUE, eval = FALSE}
 head(enriched[["GO_Biological_Process_2023"]])
@@ -108,7 +110,7 @@ knitr::kable(x)
 
 ### With background
 
-You can now try adding a background to `enrichr`.
+You can now add background genes when using `enrichr()`.
 
 ```{r, echo = TRUE, eval = TRUE}
 # Load example background
@@ -119,7 +121,7 @@ head(background)
 enriched2 <- enrichr(input, dbs, background = background)
 ```
 
-Now view the `"GO_Biological_Process_2023"` results from `enriched2`.
+Now view the `"GO_Biological_Process_2023"` results from the `enriched2` object.
 
 ```{r, echo = TRUE, eval = FALSE}
 head(enriched2[["GO_Biological_Process_2023"]])
@@ -139,7 +141,7 @@ replace the 'Rank' column with 'Overlap' by setting `include_overlap = TRUE`.
 enriched3 <- enrichr(input, dbs, background = background, include_overlap = TRUE)
 ```
 
-Now view the `"GO_Biological_Process_2023"` results from `enriched3`.
+Now view the `"GO_Biological_Process_2023"` results from the `enriched3` object.
 
 ```{r, echo = TRUE, eval = FALSE}
 head(enriched3[["GO_Biological_Process_2023"]])
@@ -153,7 +155,7 @@ knitr::kable(x)
 
 ## Visualise results
 
-Plot Enrichr `GO_Biological_Process_2023` output. (Plotting function contributed by I-Hsuan Lin)
+Plot the `"GO_Biological_Process_2023"` results. (Plotting function contributed by I-Hsuan Lin)
 
 ```{r, echo = TRUE, eval = TRUE, fig.width = 8, fig.height = 5, fig.align = "center", dpi = 100}
 plotEnrich(enriched[["GO_Biological_Process_2023"]], showTerms = 20, numChar = 40, 
@@ -162,7 +164,10 @@ plotEnrich(enriched[["GO_Biological_Process_2023"]], showTerms = 20, numChar = 4
 
 ## Export results
 
-Export results to text files or Excel.
+Export Enrichr results as text or Excel files. By default (i.e. `outFile = "txt"`), 
+the results from all the selected databases are saved into individual text files. 
+When using `outFile = "excel"`, the results are saved into worksheets in a single Excel 2007 (XLSX) file. 
+(Print function contributed by I-Hsuan Lin and Kai Hu)
 
 ```{r, echo = TRUE, eval = FALSE}
 # To text files
@@ -170,15 +175,6 @@ printEnrich(enriched)
 
 # To Excel
 printEnrich(enriched, outFile = "excel")
-```
-
-Save Enrichr results as text or Excel files. By default (i.e. `outFile="txt"`), the results from the
-selected databases are saved into individual text files. When using `outFile="excel"`, the results are
-saved into worksheets in a single Excel 2007 (XLSX) file. (Print function contributed by I-Hsuan Lin
-and Kai Hu)
-
-```{r, echo = TRUE, eval = FALSE}
-printEnrich(enriched)
 ```
 
 ## Using `enrichR` behind a proxy
