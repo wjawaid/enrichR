@@ -9,8 +9,7 @@ printEnrich(
   prefix = "enrichr",
   showTerms = NULL,
   columns = c(1:9),
-  outFile = c("txt", "excel"),
-  write2file = NULL
+  outFile = c("txt", "excel")
 )
 }
 \arguments{
@@ -31,9 +30,6 @@ with those annotated in the Enrichr GMT files}
 
 \item{outFile}{(Optional). Output file format, choose from "txt" and "excel". 
 Default is "txt".}
-
-\item{write2file}{(Optional). Deprecated argument. Always print to text or Excel file(s).}
-
 }
 \description{
 Print Enrichr results
@@ -48,13 +44,11 @@ if (getOption("enrichR.live")) {
   enrichRLive <- TRUE
   dbs <- listEnrichrDbs()
   if(is.null(dbs)) enrichRLive <- FALSE
-
   dbs <- c("GO_Molecular_Function_2023", "GO_Cellular_Component_2023",
            "GO_Biological_Process_2023")
   enriched <- enrichr(input, dbs)
   print(head(enriched[[1]]))
-  if (enrichRLive) printEnrich(enriched, write2file = FALSE)
-
+  if (enrichRLive) printEnrich(enriched, outFile = "excel")
 }
 }
 \author{

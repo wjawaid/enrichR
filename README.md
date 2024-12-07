@@ -1,7 +1,7 @@
 An R interface to the Enrichr database
 ================
 Wajid Jawaid
-2023-07-25
+2024-12-07
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
@@ -51,6 +51,7 @@ library(enrichR)
 #> YeastEnrichr ... Connection is Live!
 #> FishEnrichr ... Connection is Live!
 #> OxEnrichr ... Connection is Live!
+
 listEnrichrSites()
 #> Enrichr ... Connection is Live!
 #> FlyEnrichr ... Connection is Live!
@@ -58,6 +59,7 @@ listEnrichrSites()
 #> YeastEnrichr ... Connection is Live!
 #> FishEnrichr ... Connection is Live!
 #> OxEnrichr ... Connection is Live!
+
 setEnrichrSite("Enrichr") # Human genes
 #> Connection changed to https://maayanlab.cloud/Enrichr/
 #> Connection is Live!
@@ -75,14 +77,14 @@ dbs <- listEnrichrDbs()
 head(dbs)
 ```
 
-| geneCoverage | genesPerTerm | libraryName                      | numTerms | appyter                                  | categoryId |
-|-------------:|-------------:|:---------------------------------|---------:|:-----------------------------------------|-----------:|
-|        13362 |          275 | Genome_Browser_PWMs              |      615 | ea115789fcbf12797fd692cec6df0ab4dbc79c6a |          1 |
-|        27884 |         1284 | TRANSFAC_and_JASPAR_PWMs         |      326 | 7d42eb43a64a4e3b20d721fc7148f685b53b6b30 |          1 |
-|         6002 |           77 | Transcription_Factor_PPIs        |      290 | 849f222220618e2599d925b6b51868cf1dab3763 |          1 |
-|        47172 |         1370 | ChEA_2013                        |      353 | 7ebe772afb55b63b41b79dd8d06ea0fdd9fa2630 |          7 |
-|        47107 |          509 | Drug_Perturbations_from_GEO_2014 |      701 | ad270a6876534b7cb063e004289dcd4d3164f342 |          7 |
-|        21493 |         3713 | ENCODE_TF_ChIP-seq_2014          |      498 | 497787ebc418d308045efb63b8586f10c526af51 |          7 |
+| geneCoverage | genesPerTerm | libraryName | numTerms | appyter | categoryId |
+|---:|---:|:---|---:|:---|---:|
+| 13362 | 275 | Genome_Browser_PWMs | 615 | ea115789fcbf12797fd692cec6df0ab4dbc79c6a | 1 |
+| 27884 | 1284 | TRANSFAC_and_JASPAR_PWMs | 326 | 7d42eb43a64a4e3b20d721fc7148f685b53b6b30 | 1 |
+| 6002 | 77 | Transcription_Factor_PPIs | 290 | 849f222220618e2599d925b6b51868cf1dab3763 | 1 |
+| 47172 | 1370 | ChEA_2013 | 353 | 7ebe772afb55b63b41b79dd8d06ea0fdd9fa2630 | 7 |
+| 47107 | 509 | Drug_Perturbations_from_GEO_2014 | 701 | ad270a6876534b7cb063e004289dcd4d3164f342 | 7 |
+| 21493 | 3713 | ENCODE_TF_ChIP-seq_2014 | 498 | 497787ebc418d308045efb63b8586f10c526af51 | 7 |
 
 Select the 2023 GO databases.
 
@@ -95,7 +97,7 @@ dbs <- c("GO_Molecular_Function_2023", "GO_Cellular_Component_2023",
 
 ### Without background
 
-Query with `enrichr` using genes available from the package.
+Query with `enrichr()` using example genes available from the package.
 
 ``` r
 # Load example input genes
@@ -113,24 +115,25 @@ enriched <- enrichr(input, dbs)
 #> Parsing results... Done.
 ```
 
-Now view the `"GO_Biological_Process_2023"` results from `enriched`.
+Now view the `"GO_Biological_Process_2023"` results from the `enriched`
+object.
 
 ``` r
 head(enriched[["GO_Biological_Process_2023"]])
 ```
 
-| Term                                                                   | Overlap |   P.value | Adjusted.P.value | Old.P.value | Old.Adjusted.P.value | Odds.Ratio | Combined.Score | Genes                      |
-|:-----------------------------------------------------------------------|:--------|----------:|-----------------:|------------:|---------------------:|-----------:|---------------:|:---------------------------|
-| Mitochondrial Transcription (GO:0006390)                               | 3/12    | 0.0012685 |        0.7123925 |           0 |                    0 |  17.577061 |      117.23788 | TFAM;POLRMT;TFB1M          |
-| Alpha-Amino Acid Metabolic Process (GO:1901605)                        | 4/29    | 0.0019937 |        0.7123925 |           0 |                    0 |   8.452830 |       52.55773 | SRR;ALDH6A1;KMO;GNMT       |
-| Protein Transmembrane Import Into Intracellular Organelle (GO:0044743) | 4/32    | 0.0028882 |        0.7123925 |           0 |                    0 |   7.546015 |       44.12249 | DNAJC19;TIMM44;TRIM37;PEX1 |
-| Neutrophil Degranulation (GO:0043312)                                  | 2/5     | 0.0033774 |        0.7123925 |           0 |                    0 |  35.070599 |      199.57464 | VAMP8;STXBP2               |
-| Medium-Chain Fatty Acid Biosynthetic Process (GO:0051792)              | 2/5     | 0.0033774 |        0.7123925 |           0 |                    0 |  35.070599 |      199.57464 | ABHD3;OXSM                 |
-| Mitochondrial RNA Metabolic Process (GO:0000959)                       | 3/20    | 0.0058819 |        0.7123925 |           0 |                    0 |   9.301708 |       47.77237 | TFAM;POLRMT;TFB1M          |
+| Term | Overlap | P.value | Adjusted.P.value | Old.P.value | Old.Adjusted.P.value | Odds.Ratio | Combined.Score | Genes |
+|:---|:---|---:|---:|---:|---:|---:|---:|:---|
+| Mitochondrial Transcription (GO:0006390) | 3/12 | 0.0012685 | 0.7123925 | 0 | 0 | 17.577061 | 117.23788 | TFAM;POLRMT;TFB1M |
+| Alpha-Amino Acid Metabolic Process (GO:1901605) | 4/29 | 0.0019937 | 0.7123925 | 0 | 0 | 8.452830 | 52.55773 | SRR;ALDH6A1;KMO;GNMT |
+| Protein Transmembrane Import Into Intracellular Organelle (GO:0044743) | 4/32 | 0.0028882 | 0.7123925 | 0 | 0 | 7.546015 | 44.12249 | DNAJC19;TIMM44;TRIM37;PEX1 |
+| Neutrophil Degranulation (GO:0043312) | 2/5 | 0.0033774 | 0.7123925 | 0 | 0 | 35.070599 | 199.57464 | VAMP8;STXBP2 |
+| Medium-Chain Fatty Acid Biosynthetic Process (GO:0051792) | 2/5 | 0.0033774 | 0.7123925 | 0 | 0 | 35.070599 | 199.57464 | ABHD3;OXSM |
+| Mitochondrial RNA Metabolic Process (GO:0000959) | 3/20 | 0.0058819 | 0.7123925 | 0 | 0 | 9.301708 | 47.77237 | TFAM;POLRMT;TFB1M |
 
 ### With background
 
-You can now try adding a background to `enrichr`.
+You can now add background genes when using `enrichr()`.
 
 ``` r
 # Load example background
@@ -151,20 +154,21 @@ enriched2 <- enrichr(input, dbs, background = background)
 #> Parsing results... Done.
 ```
 
-Now view the `"GO_Biological_Process_2023"` results from `enriched2`.
+Now view the `"GO_Biological_Process_2023"` results from the `enriched2`
+object.
 
 ``` r
 head(enriched2[["GO_Biological_Process_2023"]])
 ```
 
-| Term                                                                   | Rank |   P.value | Adjusted.P.value | Old.P.value | Old.Adjusted.P.value | Odds.Ratio | Combined.Score | Genes                      |
-|:-----------------------------------------------------------------------|:-----|----------:|-----------------:|------------:|---------------------:|-----------:|---------------:|:---------------------------|
-| Mitochondrial Transcription (GO:0006390)                               | 1    | 0.0003711 |         0.240515 |           0 |                    0 |  27.116000 |      214.19193 | TFAM;POLRMT;TFB1M          |
-| Alpha-Amino Acid Metabolic Process (GO:1901605)                        | 2    | 0.0004145 |         0.240515 |           0 |                    0 |  13.057671 |      101.69976 | SRR;ALDH6A1;KMO;GNMT       |
-| Protein Transmembrane Import Into Intracellular Organelle (GO:0044743) | 3    | 0.0006097 |         0.240515 |           0 |                    0 |  11.656913 |       86.29136 | DNAJC19;TIMM44;TRIM37;PEX1 |
-| Monocarboxylic Acid Biosynthetic Process (GO:0072330)                  | 4    | 0.0012176 |         0.240515 |           0 |                    0 |   6.816532 |       45.74506 | ALDH1A3;SRR;SCP2;OXSM;MCAT |
-| Neutrophil Degranulation (GO:0043312)                                  | 5    | 0.0014663 |         0.240515 |           0 |                    0 |  54.031872 |      352.55862 | VAMP8;STXBP2               |
-| Medium-Chain Fatty Acid Biosynthetic Process (GO:0051792)              | 6    | 0.0014663 |         0.240515 |           0 |                    0 |  54.031872 |      352.55862 | ABHD3;OXSM                 |
+| Term | Rank | P.value | Adjusted.P.value | Old.P.value | Old.Adjusted.P.value | Odds.Ratio | Combined.Score | Genes |
+|:---|:---|---:|---:|---:|---:|---:|---:|:---|
+| Mitochondrial Transcription (GO:0006390) | 1 | 0.0003711 | 0.240515 | 0 | 0 | 27.116000 | 214.19193 | TFAM;POLRMT;TFB1M |
+| Alpha-Amino Acid Metabolic Process (GO:1901605) | 2 | 0.0004145 | 0.240515 | 0 | 0 | 13.057671 | 101.69976 | SRR;ALDH6A1;KMO;GNMT |
+| Protein Transmembrane Import Into Intracellular Organelle (GO:0044743) | 3 | 0.0006097 | 0.240515 | 0 | 0 | 11.656913 | 86.29136 | DNAJC19;TIMM44;TRIM37;PEX1 |
+| Monocarboxylic Acid Biosynthetic Process (GO:0072330) | 4 | 0.0012176 | 0.240515 | 0 | 0 | 6.816532 | 45.74506 | ALDH1A3;SRR;SCP2;OXSM;MCAT |
+| Neutrophil Degranulation (GO:0043312) | 5 | 0.0014663 | 0.240515 | 0 | 0 | 54.031872 | 352.55862 | VAMP8;STXBP2 |
+| Medium-Chain Fatty Acid Biosynthetic Process (GO:0051792) | 6 | 0.0014663 | 0.240515 | 0 | 0 | 54.031872 | 352.55862 | ABHD3;OXSM |
 
 By default, the results table from analysis with a background does not
 have the ‘Overlap’ column. We can calculate the annotated genes in each
@@ -186,24 +190,25 @@ enriched3 <- enrichr(input, dbs, background = background, include_overlap = TRUE
 #> Parsing results... Done.
 ```
 
-Now view the `"GO_Biological_Process_2023"` results from `enriched3`.
+Now view the `"GO_Biological_Process_2023"` results from the `enriched3`
+object.
 
 ``` r
 head(enriched3[["GO_Biological_Process_2023"]])
 ```
 
-| Term                                                                   | Overlap |   P.value | Adjusted.P.value | Old.P.value | Old.Adjusted.P.value | Odds.Ratio | Combined.Score | Genes                      |
-|:-----------------------------------------------------------------------|:--------|----------:|-----------------:|------------:|---------------------:|-----------:|---------------:|:---------------------------|
-| Mitochondrial Transcription (GO:0006390)                               | 3/12    | 0.0003711 |         0.240515 |           0 |                    0 |  27.116000 |      214.19193 | TFAM;POLRMT;TFB1M          |
-| Alpha-Amino Acid Metabolic Process (GO:1901605)                        | 4/29    | 0.0004145 |         0.240515 |           0 |                    0 |  13.057671 |      101.69976 | SRR;ALDH6A1;KMO;GNMT       |
-| Protein Transmembrane Import Into Intracellular Organelle (GO:0044743) | 4/32    | 0.0006097 |         0.240515 |           0 |                    0 |  11.656913 |       86.29136 | DNAJC19;TIMM44;TRIM37;PEX1 |
-| Monocarboxylic Acid Biosynthetic Process (GO:0072330)                  | 5/65    | 0.0012176 |         0.240515 |           0 |                    0 |   6.816532 |       45.74506 | ALDH1A3;SRR;SCP2;OXSM;MCAT |
-| Neutrophil Degranulation (GO:0043312)                                  | 2/5     | 0.0014663 |         0.240515 |           0 |                    0 |  54.031872 |      352.55862 | VAMP8;STXBP2               |
-| Medium-Chain Fatty Acid Biosynthetic Process (GO:0051792)              | 2/5     | 0.0014663 |         0.240515 |           0 |                    0 |  54.031872 |      352.55862 | ABHD3;OXSM                 |
+| Term | Overlap | P.value | Adjusted.P.value | Old.P.value | Old.Adjusted.P.value | Odds.Ratio | Combined.Score | Genes |
+|:---|:---|---:|---:|---:|---:|---:|---:|:---|
+| Mitochondrial Transcription (GO:0006390) | 3/12 | 0.0003711 | 0.240515 | 0 | 0 | 27.116000 | 214.19193 | TFAM;POLRMT;TFB1M |
+| Alpha-Amino Acid Metabolic Process (GO:1901605) | 4/29 | 0.0004145 | 0.240515 | 0 | 0 | 13.057671 | 101.69976 | SRR;ALDH6A1;KMO;GNMT |
+| Protein Transmembrane Import Into Intracellular Organelle (GO:0044743) | 4/32 | 0.0006097 | 0.240515 | 0 | 0 | 11.656913 | 86.29136 | DNAJC19;TIMM44;TRIM37;PEX1 |
+| Monocarboxylic Acid Biosynthetic Process (GO:0072330) | 5/65 | 0.0012176 | 0.240515 | 0 | 0 | 6.816532 | 45.74506 | ALDH1A3;SRR;SCP2;OXSM;MCAT |
+| Neutrophil Degranulation (GO:0043312) | 2/5 | 0.0014663 | 0.240515 | 0 | 0 | 54.031872 | 352.55862 | VAMP8;STXBP2 |
+| Medium-Chain Fatty Acid Biosynthetic Process (GO:0051792) | 2/5 | 0.0014663 | 0.240515 | 0 | 0 | 54.031872 | 352.55862 | ABHD3;OXSM |
 
 ## Visualise results
 
-Plot Enrichr `GO_Biological_Process_2023` output. (Plotting function
+Plot the `"GO_Biological_Process_2023"` results. (Plotting function
 contributed by I-Hsuan Lin)
 
 ``` r
@@ -215,7 +220,11 @@ plotEnrich(enriched[["GO_Biological_Process_2023"]], showTerms = 20, numChar = 4
 
 ## Export results
 
-Export results to text files or Excel.
+Export Enrichr results as text or Excel files. By default
+(i.e. `outFile = "txt"`), the results from all the selected databases
+are saved into individual text files. When using `outFile = "excel"`,
+the results are saved into worksheets in a single Excel 2007 (XLSX)
+file. (Print function contributed by I-Hsuan Lin and Kai Hu)
 
 ``` r
 # To text files
@@ -225,22 +234,12 @@ printEnrich(enriched)
 printEnrich(enriched, outFile = "excel")
 ```
 
-
-Save Enrichr results as text or Excel files. By default (i.e. `outFile="txt"`), the results from the
-selected databases are saved into individual text files. When using `outFile="excel"`, the results are
-saved into worksheets in a single Excel 2007 (XLSX) file. (Print function contributed by I-Hsuan Lin
-and Kai Hu)
-
-```r
-printEnrich(enriched)
-```
-
-
 ## Using `enrichR` behind a proxy
 
-If your computer is behind an HTTP or HTTPS proxy,
-you can set the RCurl Proxy options explicitly using `RCurlOptions` and
-enrichR will use the provided settings to connect to the Enrichr database via `httr::use_proxy()`.
+If your computer is behind an HTTP or HTTPS proxy, you can set the RCurl
+Proxy options explicitly using `RCurlOptions` and enrichR will use the
+provided settings to connect to the Enrichr database via
+`httr::use_proxy()`.
 
 For example:
 
@@ -252,16 +251,17 @@ options(RCurlOptions = list(proxy = 'http://ip_or_url',
                             proxyauth = 'basic'))
 ```
 
-# References2
+# References
 
-<div id="refs" class="references csl-bib-body hanging-indent">
+<div id="refs" class="references csl-bib-body hanging-indent"
+entry-spacing="0">
 
 <div id="ref-kuleshov_enrichr:_2016" class="csl-entry">
 
 Kuleshov, Maxim V., Matthew R. Jones, Andrew D. Rouillard, Nicolas F.
 Fernandez, Qiaonan Duan, Zichen Wang, Simon Koplev, et al. 2016.
 “[Enrichr: A Comprehensive Gene Set Enrichment Analysis Web Server 2016
-Update](https://pmc.ncbi.nlm.nih.gov/articles/PMC4987924/).” *Nucleic
+Update](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4987924).” *Nucleic
 Acids Res* 44 (Web Server issue): W90–97.
 
 </div>
