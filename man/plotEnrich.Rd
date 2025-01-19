@@ -47,7 +47,7 @@ Indicates the y-axis label.}
 Indicates the main title for the graphic.}
 }
 \value{
-A \code{\link{ggplot}}2 plot object
+A \code{\link[ggplot2]{ggplot}} plot object
 }
 \description{
 Visualise a Enrichr output as barplot

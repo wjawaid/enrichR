@@ -68,16 +68,18 @@
 ##' @importFrom httr status_code
 ##' @importFrom httr http_status
 ##' @importFrom httr use_proxy
-getEnrichr <- function(url, ...) {
+getEnrichr <- function(method = "GET", url, ...) {
+    if(!method %in% c("GET","POST")) stop("Support GET and POST only.")
     options(enrichR.live = FALSE)
     tryCatch({
         opts <- .proxyOpts()
         if(is.null(opts)) {
-            x <- GET(url = url, ...)
+            x <- if(method == "GET") GET(url = url, ...) else POST(url = url, ...)
 	} else {
-            x <- GET(url = url, use_proxy(url = opts['url'], port = as.numeric(opts['port']),
-                                          username = opts['username'], password = opts['password'],
-                                          auth = opts['auth']), ...)
+            proxy_config <- use_proxy(url = opts['url'], port = as.numeric(opts['port']),
+                                      username = opts['username'], password = opts['password'],
+                                      auth = opts['auth'])
+            x <- if(method == "GET") GET(url = url, proxy_config, ...) else POST(url = url, proxy_config, ...)
 	}
         code <- status_code(x)
         if(code != 200) {
@@ -146,10 +148,9 @@ setEnrichrSite <- function(site) {
         message(paste("-", getOption("enrichR.sites")[matched], "\n"),)
     } else {
         site <- getOption("enrichR.sites")[matched]
-
-        options(enrichR.base.address = paste0(getOption("enrichR.sites.base.address"),site,"/"))
-        message("Connection changed to ",paste0(getOption("enrichR.sites.base.address"),site,"/"))
-        getEnrichr(url = paste0(getOption("enrichR.base.address"),"datasetStatistics"))
+        options(enrichR.base.address = paste0(getOption("enrichR.sites.base.address"), site,"/"))
+        message("Connection changed to ",paste0(getOption("enrichR.sites.base.address"), site,"/"))
+        getEnrichr(url = paste0(getOption("enrichR.base.address"), "datasetStatistics"))
         if (getOption("enrichR.live")) message(msg)
     }
 }
@@ -167,7 +168,7 @@ setEnrichrSite <- function(site) {
 listEnrichrDbs <- function() {
     dfSAF <- getOption("stringsAsFactors", FALSE)
     options(stringsAsFactors = FALSE)
-    dbs <- getEnrichr(url = paste0(getOption("enrichR.base.address"), "datasetStatistics"), ...)
+    dbs <- getEnrichr(url = paste0(getOption("enrichR.base.address"), "datasetStatistics"))
     if (!getOption("enrichR.live")) return()
     dbs <- intToUtf8(dbs$content)
     dbs <- fromJSON(dbs)
@@ -301,8 +302,6 @@ listEnrichrDbs <- function() {
 ##' in the resulting data.frame when analysing with a background. Default is \code{"FALSE"}.
 ##' @return Returns a list of data.frame of enrichment terms, p-values, ...
 ##' @author Wajid Jawaid \email{wj241@alumni.cam.ac.uk}
-##' @importFrom httr POST
-##' @importFrom httr use_proxy
 ##' @importFrom rjson fromJSON
 ##' @importFrom utils read.table
 ##' @export
@@ -333,33 +332,11 @@ enrichr <- function(genes, databases = NULL, background = NULL, include_overlap 
     if (is.null(databases)) {
         stop("No databases have been provided")
     }
-
-    if (!getOption("enrichR.quiet")) cat("Uploading data to Enrichr... ")
-    opts <- .proxyOpts()
-    if (is.vector(genes) & ! all(genes == "") & length(genes) != 0) {
-        if(is.null(opts)) {
-            temp <- POST(url=paste0(getOption("enrichR.base.address"), "enrich"),
-                         body=list(list=paste(genes, collapse="\n")))
-	} else {
-            temp <- POST(url=paste0(getOption("enrichR.base.address"), "enrich"),
-                         body=list(list=paste(genes, collapse="\n")),
-			 use_proxy(url = opts['url'], port = as.numeric(opts['port']),
-				   username = opts['username'], password = opts['password'], auth = opts['auth']))
-	}
-    } else if (is.data.frame(genes)) {
-        if(is.null(opts)) {
-            temp <- POST(url=paste0(getOption("enrichR.base.address"), "enrich"),
-                         body=list(list=paste(paste(genes[,1], genes[,2], sep=","),
-                                              collapse="\n")))
-	} else {
-            temp <- POST(url=paste0(getOption("enrichR.base.address"), "enrich"),
-                         body=list(list=paste(paste(genes[,1], genes[,2], sep=","),
-                                              collapse="\n")),
-                         use_proxy(url = opts['url'], port = as.numeric(opts['port']),
-				   username = opts['username'], password = opts['password'], auth = opts['auth']))
-	}
-    } else {
-        warning("genes must be a non-empty vector of gene names or a data.frame with genes and score.")
+    if(!is.null(background)) {
+        if(basename(base.address) != "Enrichr") {
+            warning("Enrichment analysis with background genes is only supported on the main site\nSwitching to 'Enrichr'")
+            setEnrichrSite("Enrichr")
+        } else if(!is.vector(background) | all(background == "") | length(background) == 0) stop("'background' is invalid")
     }
     dfSAF <- getOption("stringsAsFactors", FALSE)
     options(stringsAsFactors = FALSE)
@@ -478,8 +455,6 @@ enrichr <- function(genes, databases = NULL, background = NULL, include_overlap 
 ##' 7-"Odds.Ratio", 8-"Combined.Score", 9-"Combined.Score".
 ##' * In results with background, the second column is "Rank" if terms are not identical 
 ##' with those annotated in the Enrichr GMT files
-##' @param write2file (Optional). Set to TRUE if you would like this functino to
-##' output a file
 ##' @param outFile (Optional). Output file format, choose from "txt" and "excel". 
 ##' Default is "txt".
 ##' @return NULL
@@ -494,15 +469,14 @@ enrichr <- function(genes, databases = NULL, background = NULL, include_overlap 
 ##'   enrichRLive <- TRUE
 ##'   dbs <- listEnrichrDbs()
 ##'   if(is.null(dbs)) enrichRLive <- FALSE
-
 ##'   dbs <- c("GO_Molecular_Function_2023", "GO_Cellular_Component_2023",
 ##'            "GO_Biological_Process_2023")
 ##'   enriched <- enrichr(input, dbs)
 ##'   print(head(enriched[[1]]))
-##'   if (enrichRLive) printEnrich(enriched, write2file = FALSE)
+##'   if (enrichRLive) printEnrich(enriched, outFile = "excel")
 ##' }
 printEnrich <- function(data, prefix = "enrichr", showTerms = NULL, columns = c(1:9),
-                        outFile = c("txt","excel"), write2file = NULL) {
+                        outFile = c("txt","excel")) {
     if (!is.list(data)) stop("data is malformed must be a list")
     if (!is.integer(columns)) {
         stop(sprintf("'columns=' (%s) is invalid, must be a positive integer vector", 
@@ -516,10 +490,6 @@ printEnrich <- function(data, prefix = "enrichr", showTerms = NULL, columns = c(
         sheetnames <- names(data)
     } else {
         filenames <- paste0(prefix, "_", names(data), ".txt")
-    }
-
-    if (!is.null(write2file)) {
-        .Deprecated(msg = "'write2file=' is deprecated and will be ignored")
     }
 
     for (i in 1:length(data)) {
@@ -636,7 +606,6 @@ plotEnrich <- function(df, showTerms = 20, numChar = 40, y = "Count", orderBy = 
     if(any(duplicated(shortName))) {
         warning("There are duplicated trimmed names in the plot, consider increasing the 'numChar' setting.")
     }
-
 
     # Define fill variable (P.value or Combined.Score)
     if(orderBy == "Combined.Score") {
