@@ -10,7 +10,7 @@
 ##' @param libname (Required). Library name
 ##' @param pkgname (Required). Package name
 ##' @return NULL
-##' @author Wajid Jawaid \email{wj241@alumni.cam.ac.uk}
+##' @author Wajid Jawaid \email{wajid.jawaid@gmail.com}
 ##' @importFrom curl has_internet
 .onAttach <- function(libname, pkgname) {
     options(enrichR.base.address = "https://maayanlab.cloud/Enrichr/")
@@ -44,7 +44,7 @@
 ##' @param startUp (Optional). Check if function is called during startUp
 ##' @param ... (Optional). Additional parameters to pass to GET
 ##' @return same as GET
-##' @author Wajid Jawaid \email{wj241@alumni.cam.ac.uk}
+##' @author Wajid Jawaid \email{wajid.jawaid@gmail.com}
 ##' @author I-Hsuan Lin \email{i-hsuan.lin@manchester.ac.uk}
 ##' @importFrom httr GET
 ##' @importFrom httr status_code
@@ -130,7 +130,7 @@ setEnrichrSite <- function(site) {
 ##' Look up available databases on Enrichr
 ##' @title Look up available databases on Enrichr
 ##' @return A data.frame of available Enrichr databases
-##' @author Wajid Jawaid \email{wj241@alumni.cam.ac.uk}
+##' @author Wajid Jawaid \email{wajid.jawaid@gmail.com}
 ##' @importFrom httr GET POST
 ##' @importFrom rjson fromJSON
 ##' @export
@@ -163,8 +163,9 @@ listEnrichrDbs <- function() {
 ##' in first column and a score between 0 and 1 in the other.
 ##' @param databases (Required). Character vector of databases to search.
 ##' See https://maayanlab.cloud/Enrichr/ for available databases.
+##' @param sleepTime (Optional) Time to wait (in seconds) between sending requests to the server to prevent the same results being returned as the previous request. Default is 1.
 ##' @return Returns a list of data.frame of enrichment terms, p-values, ...
-##' @author Wajid Jawaid \email{wj241@alumni.cam.ac.uk}
+##' @author Wajid Jawaid \email{wajid.jawaid@gmail.com}
 ##' @importFrom httr GET POST
 ##' @importFrom rjson fromJSON
 ##' @importFrom utils read.table
@@ -174,7 +175,7 @@ listEnrichrDbs <- function() {
 ##' dbs <- c("GO_Molecular_Function_2018", "GO_Cellular_Component_2018",
 ##'          "GO_Biological_Process_2018")
 ##' enriched <- enrichr(c("Runx1", "Gfi1", "Gfi1b", "Spi1", "Gata1", "Kdr"), dbs)
-enrichr <- function(genes, databases = NULL) {
+enrichr <- function(genes, databases = NULL, sleepTime = 1) {
     ## if (is.null(databases)) {
     ##     dbs <- c("ChEA 2015", "Epigenomics Roadmap HM ChIP-seq",
     ##      "ENCODE and ChEA Consensus TFs from ChIP-X",
@@ -199,6 +200,7 @@ enrichr <- function(genes, databases = NULL) {
         message("No databases have been provided")
         return()
     }
+    Sys.sleep(sleepTime)
     if (!getOption("enrichR.quiet")) cat("Uploading data to Enrichr... ")
     if (is.vector(genes) & ! all(genes == "") & length(genes) != 0) {
         temp <- POST(url=paste0(getOption("enrichR.base.address"), "enrich"),
@@ -282,7 +284,7 @@ enrichr <- function(genes, databases = NULL) {
 ##' output a file
 ##' @param outFile (Optional). Output file format, choose from "txt" and "excel". Default is "txt".
 ##' @return NULL
-##' @author Wajid Jawaid \email{wj241@alumni.cam.ac.uk}
+##' @author Wajid Jawaid \email{wajid.jawaid@gmail.com}
 ##' @author I-Hsuan Lin \email{i-hsuan.lin@manchester.ac.uk}
 ##' @importFrom utils write.table
 ##' @importFrom WriteXLS WriteXLS
@@ -354,7 +356,7 @@ printEnrich <- function(data, prefix = "enrichr", showTerms = NULL, columns = c(
 ##' Indicates the y-axis label.
 ##' @param title (Optional). A character string. Default is \code{NULL}
 ##' Indicates the main title for the graphic.
-##' @return A \code{\link{ggplot}}2 plot object
+##' @return A \code{\link[ggplot2]{ggplot}}2 plot object
 ##' @author I-Hsuan Lin \email{i-hsuan.lin@manchester.ac.uk}
 ##' @seealso
 ##' \code{\link[ggplot2]{ggplot}}

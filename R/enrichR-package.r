@@ -3,8 +3,7 @@
 #' The enrichR package provides an R interface to all enrichR (https://maayanlab.cloud/Enrichr/) databases.
 #'
 #' @name enrichR-package
-#' @author Wajid Jawaid \email{wj241@alumni.cam.ac.uk}
-#' @docType package
+#' @author Wajid Jawaid \email{wajid.jawaid@gmail.com}
 #' @keywords package
 NULL
 

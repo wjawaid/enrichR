@@ -19,5 +19,5 @@ Look up available databases on Enrichr
 dbs <- listEnrichrDbs()
 }
 \author{
-Wajid Jawaid \email{wj241@alumni.cam.ac.uk}
+Wajid Jawaid \email{wajid.jawaid@gmail.com}
 }

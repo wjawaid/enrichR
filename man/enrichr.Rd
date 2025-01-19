@@ -4,7 +4,7 @@
 \alias{enrichr}
 \title{Gene enrichment using Enrichr}
 \usage{
-enrichr(genes, databases = NULL)
+enrichr(genes, databases = NULL, sleepTime = 1)
 }
 \arguments{
 \item{genes}{(Required). Character vector of gene names or data.frame of gene names in
@@ -12,6 +12,8 @@ in first column and a score between 0 and 1 in the other.}
 
 \item{databases}{(Required). Character vector of databases to search.
 See https://maayanlab.cloud/Enrichr/ for available databases.}
+
+\item{sleepTime}{(Optional) Time to wait (in seconds) between sending requests to the server to prevent the same results being returned as the previous request. Default is 1.}
 }
 \value{
 Returns a list of data.frame of enrichment terms, p-values, ...
@@ -29,5 +31,5 @@ dbs <- c("GO_Molecular_Function_2018", "GO_Cellular_Component_2018",
 enriched <- enrichr(c("Runx1", "Gfi1", "Gfi1b", "Spi1", "Gata1", "Kdr"), dbs)
 }
 \author{
-Wajid Jawaid \email{wj241@alumni.cam.ac.uk}
+Wajid Jawaid \email{wajid.jawaid@gmail.com}
 }

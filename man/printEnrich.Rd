@@ -49,7 +49,7 @@ if (getOption("enrichR.live")) {
 }
 }
 \author{
-Wajid Jawaid \email{wj241@alumni.cam.ac.uk}
+Wajid Jawaid \email{wajid.jawaid@gmail.com}
 
 I-Hsuan Lin \email{i-hsuan.lin@manchester.ac.uk}
 }
