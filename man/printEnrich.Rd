@@ -48,7 +48,7 @@ if (getOption("enrichR.live")) {
            "GO_Biological_Process_2023")
   enriched <- enrichr(input, dbs)
   print(head(enriched[[1]]))
-  if (enrichRLive) printEnrich(enriched, outFile = "excel")
+  # if (enrichRLive) printEnrich(enriched, outFile = "excel")
 }
 }
 \author{

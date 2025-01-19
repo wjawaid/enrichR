@@ -12,8 +12,6 @@ getEnrichr(method = "GET", url, ...)
 \item{url}{(Required). URL address requested}
 
 \item{...}{(Optional). Additional parameters to pass to GET}
-
-\item{startUp}{(Optional). Check if function is called during startUp}
 }
 \value{
 same as GET

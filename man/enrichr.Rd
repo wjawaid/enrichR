@@ -4,7 +4,13 @@
 \alias{enrichr}
 \title{Gene enrichment using Enrichr}
 \usage{
-enrichr(genes, databases = NULL, background = NULL, include_overlap = FALSE)
+enrichr(
+  genes,
+  databases = NULL,
+  background = NULL,
+  include_overlap = FALSE,
+  sleepTime = 1
+)
 }
 \arguments{
 \item{genes}{(Required). Character vector of Entrez gene symbols as input. A data.frame

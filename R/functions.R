@@ -38,7 +38,13 @@
     }
 }
 
-## Internal function to check RCurlOptions
+
+##' Internal function to check RCurlOptions
+##'
+##' Internal function to check RCurlOptions
+##' @title Internal function to check RCurlOptions
+##' @return Named vector
+##' @author I-Hsuan Lin \email{i-hsuan.lin@manchester.ac.uk}
 .proxyOpts <- function() {
     opts <- getOption("RCurlOptions")
     if(is.null(opts) || is.null(opts[["proxy"]])) {
@@ -59,7 +65,6 @@
 ##' @title Helper function for HTTP methods GET and POST
 ##' @param method (Required). HTTP method. Default is \code{"GET"}
 ##' @param url (Required). URL address requested
-##' @param startUp (Optional). Check if function is called during startUp
 ##' @param ... (Optional). Additional parameters to pass to GET
 ##' @return same as GET
 ##' @author Wajid Jawaid \email{wajid.jawaid@gmail.com}
@@ -180,9 +185,17 @@ listEnrichrDbs <- function() {
     dbs
 }
 
-## Given an input, check format and return a character vector
-## - In standard analysis without background, crisp (symbols only) and fuzzy (with scores) gene sets are acceptable
-## - In analysis with background, only crisp gene sets are acceptable
+
+##' Given an input, check format and return a character vector
+##'
+##' In standard analysis without background, crisp (symbols only) and
+##' fuzzy (with scores) gene sets are acceptable
+##' In analysis with background, only crisp gene sets are acceptable
+##' @title FormatGenes
+##' @param x Vector or dataframe of genes with or without score
+##' @param type Depends on type of gene input
+##' @return Character vector
+##' @author I-Hsuan Lin \email{i-hsuan.lin@manchester.ac.uk}
 .formatGenes <- function(x, type = c("standard","background")) {
     err_msg <- "Genes must be a character vector of Entrez gene symbols or a data.frame with gene symbols and/or score"
     type <- match.arg(type)
@@ -207,7 +220,15 @@ listEnrichrDbs <- function() {
     if(length(input) == 0) stop(err_msg) else paste(input, collapse = "\n")
 }
 
-## Download and parse GMT files from Enrichr
+
+##' Download and parse GMT files from Enrichr
+##'
+##' Download and parse GMT files from Enrichr
+##' @title Download and parse GMT files from Enrichr
+##' @param db library
+##' @return List object
+##' @author I-Hsuan Lin \email{i-hsuan.lin@manchester.ac.uk}
+##' @importFrom utils download.file
 .read_gmt <- function(db) {
     base.address <- getOption("enrichR.base.address")
     url <- paste0(base.address, "geneSetLibrary?mode=text&libraryName=", db)
@@ -230,41 +251,66 @@ listEnrichrDbs <- function() {
     return(gmt)
 }
 
-## Upload gene list using Speedrichr API
+
+##' Upload gene list using Speedrichr API
+##'
+##' Upload gene list using Speedrichr API
+##' @title Upload gene list using Speedrichr API
+##' @param genes Input genes
+##' @return R object that corresponds to the JSON object
+##' @author I-Hsuan Lin \email{i-hsuan.lin@manchester.ac.uk}
+##' @importFrom rjson fromJSON
+##' @importFrom httr config
 .add_list <- function(genes) {
     base.address <- getOption("speedrichr.base.address")
     url <- paste0(base.address, "addList")
     payload <- list(list = .formatGenes(genes, "background"), description = NA)
     cat(" - Your gene set... ")
     response <- getEnrichr(url = url, body = payload, method = "POST", handle = NULL,
-			   config = httr::config(http_version = 1))
+			   config = config(http_version = 1))
     # Handle odd errors that escape tryCatch
     if(is.null(response)) {
         stop("Error uploading gene list. Please try again later.")
     }
     if (!getOption("enrichR.quiet")) cat("Done.\n")
-    data <- rjson::fromJSON(rawToChar(response$content))
+    data <- fromJSON(rawToChar(response$content))
     return(data)
 }
 
-## Upload background list using Speedrichr API
+##' Upload background list using Speedrichr API
+##'
+##' Upload background list using Speedrichr API
+##' @title Upload background list using Speedrichr API
+##' @param genes gene list
+##' @return R object from JSON
+##' @author I-Hsuan Lin \email{i-hsuan.lin@manchester.ac.uk}
+##' @importFrom rjson fromJSON
+##' @importFrom httr config
 .add_background <- function(genes) {
     base.address <- getOption("speedrichr.base.address")
     url <- paste0(base.address, "addbackground")
     payload <- list(background = .formatGenes(genes, "background"))
     cat(" - Your background... ")
     response <- getEnrichr(url = url, body = payload, method = "POST", handle = NULL,
-			   config = httr::config(http_version = 1))
+			   config = config(http_version = 1))
     # Handle odd errors that escape tryCatch
     if(is.null(response)) {
         stop("Error uploading background list. Please try again later.")
     }
     if (!getOption("enrichR.quiet")) cat("Done.\n")
-    data <- rjson::fromJSON(rawToChar(response$content))
+    data <- fromJSON(rawToChar(response$content))
     return(data)
 }
 
-## Get enrichment result using Speedrichr API
+##' Get enrichment result using Speedrichr API
+##'
+##' Get enrichment result using Speedrichr API
+##' @title Get enrichment result using Speedrichr API
+##' @param uId user List ID
+##' @param bId background ID
+##' @param db background Type
+##' @return R object from JSON
+##' @author I-Hsuan Lin \email{i-hsuan.lin@manchester.ac.uk}
 .get_backgroundenrich <- function(uId, bId, db) {
     base.address <- getOption("speedrichr.base.address")
     url <- paste0(base.address, "backgroundenrich")
@@ -326,7 +372,7 @@ listEnrichrDbs <- function() {
 ##'   enriched3 <- enrichr(input, dbs, background = background, include_overlap = TRUE)
 ##'   print(head(enriched3[[1]]))
 ##' }
-enrichr <- function(genes, databases = NULL, background = NULL, include_overlap = FALSE) {
+enrichr <- function(genes, databases = NULL, background = NULL, include_overlap = FALSE, sleepTime = 1) {
     if (length(genes) < 1) {
         stop("No genes have been given")
     }
@@ -341,19 +387,22 @@ enrichr <- function(genes, databases = NULL, background = NULL, include_overlap 
         if(basename(base.address) != "Enrichr") {
             warning("Enrichment analysis with background genes is only supported on the main site\nSwitching to 'Enrichr'")
             setEnrichrSite("Enrichr")
-        } else if(!is.vector(background) | all(background == "") | length(background) == 0) stop("'background' is invalid")
+        } else if(!is.vector(background) | all(background == "") | length(background) == 0)
+            stop("'background' is invalid")
     }
     dfSAF <- getOption("stringsAsFactors", FALSE)
     options(stringsAsFactors = FALSE)
     if(is.null(background)) {
         if (!getOption("enrichR.quiet")) cat("Uploading data to Enrichr... ")
         # POST data to server, response not required
-        getEnrichr(url = paste0(base.address, "enrich"), body = list(list = .formatGenes(genes, "standard")), method = "POST")
+        getEnrichr(url = paste0(base.address, "enrich"),
+                   body = list(list = .formatGenes(genes, "standard")), method = "POST")
         if (!getOption("enrichR.quiet")) cat("Done.\n")
         dbs <- as.list(databases)
         result <- lapply(dbs, function(x) {
             if (!getOption("enrichR.quiet")) cat("  Querying ", x, "... ", sep="")
-            r <- getEnrichr(url = paste0(base.address, "export"), query = list(file = "API", backgroundType = x))
+            r <- getEnrichr(url = paste0(base.address, "export"),
+                            query = list(file = "API", backgroundType = x))
             if (!getOption("enrichR.live")) stop("Enrichr website is unreachable")
             r <- gsub("&#39;", "'", intToUtf8(r$content))
             tc <- textConnection(r)
@@ -372,10 +421,13 @@ enrichr <- function(genes, databases = NULL, background = NULL, include_overlap 
         for(db in databases) {
             res <- .get_backgroundenrich(uId, bId, db)
 
-	    r <- as.data.frame(do.call(rbind, (lapply(res[[db]], function(i) { i[[6]] <- paste(i[[6]], collapse = ";"); unlist(i) }))))
+	    r <- as.data.frame(do.call(rbind, (lapply(res[[db]], function(i) {
+                i[[6]] <- paste(i[[6]], collapse = ";"); unlist(i) }))))
             # Rank, Term, P.value, Odds.Ratio, Combined.Score, Genes, Adjusted.P.value, Old.P.value, Old.Adjusted.P.value
-            colnames(r) <- c("Rank","Term","P.value","Odds.Ratio","Combined.Score","Genes","Adjusted.P.value","Old.P.value","Old.Adjusted.P.value")
-	    r <- r[,c("Term","Rank","P.value","Adjusted.P.value","Old.P.value","Old.Adjusted.P.value","Odds.Ratio","Combined.Score","Genes")]
+            colnames(r) <- c("Rank","Term","P.value","Odds.Ratio","Combined.Score","Genes",
+                             "Adjusted.P.value","Old.P.value","Old.Adjusted.P.value")
+	    r <- r[,c("Term","Rank","P.value","Adjusted.P.value","Old.P.value",
+                      "Old.Adjusted.P.value","Odds.Ratio","Combined.Score","Genes")]
 
             if(isTRUE(include_overlap)) {
                 gmt <- .read_gmt(db)
@@ -407,7 +459,16 @@ enrichr <- function(genes, databases = NULL, background = NULL, include_overlap 
     return(result)
 }
 
-## Given a Enrichr output, order and subset criteria, returns a data frame accordingly
+
+##' Given a Enrichr output, order and subset criteria, returns a data frame accordingly
+##'
+##' Given a Enrichr output, order and subset criteria, returns a data frame accordingly
+##' @title Given a Enrichr output, order and subset criteria, returns a data frame accordingly
+##' @param df Enrichr output
+##' @param showTerms Number of terms to show. Default 20.
+##' @param orderBy Column for ordering. Default "P.value"
+##' @return Data frame
+##' @author I-Hsuan Lin \email{i-hsuan.lin@manchester.ac.uk}
 .enrichment_prep_df <- function(df, showTerms = 20, orderBy = "P.value") {
 
     if(is.null(showTerms)) {
@@ -478,7 +539,7 @@ enrichr <- function(genes, databases = NULL, background = NULL, include_overlap 
 ##'            "GO_Biological_Process_2023")
 ##'   enriched <- enrichr(input, dbs)
 ##'   print(head(enriched[[1]]))
-##'   if (enrichRLive) printEnrich(enriched, outFile = "excel")
+##'   # if (enrichRLive) printEnrich(enriched, outFile = "excel")
 ##' }
 printEnrich <- function(data, prefix = "enrichr", showTerms = NULL, columns = c(1:9),
                         outFile = c("txt","excel")) {
