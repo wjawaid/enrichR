@@ -18,5 +18,5 @@ onLoad hook to setup package options
 onLoad hook to setup package options and to check connection to website
 }
 \author{
-Wajid Jawaid \email{wj241@alumni.cam.ac.uk}
+Wajid Jawaid \email{wajid.jawaid@gmail.com}
 }

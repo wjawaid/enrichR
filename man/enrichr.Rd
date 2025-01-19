@@ -4,14 +4,24 @@
 \alias{enrichr}
 \title{Gene enrichment using Enrichr}
 \usage{
-enrichr(genes, databases = NULL, sleepTime = 1)
+enrichr(genes, databases = NULL, background = NULL, include_overlap = FALSE)
 }
 \arguments{
-\item{genes}{(Required). Character vector of gene names or data.frame of gene names in
-in first column and a score between 0 and 1 in the other.}
+\item{genes}{(Required). Character vector of Entrez gene symbols as input. A data.frame
+of gene symbols in first column is also acceptable, optionally a score denoting the
+degree of membership between 0 and 1 in the second column.}
 
 \item{databases}{(Required). Character vector of databases to search.
 See https://maayanlab.cloud/Enrichr/ for available databases.}
+
+\item{background}{(Optional). Character vector of Entrez gene symbols to be used as
+background. A data.frame of gene symbols in first column is also acceptable. 
+Default is \code{"NULL"}. Enrichment analysis with background genes is only available 
+on the main site (Enrichr). Also, it is using a different API service (Speedrichr), 
+hence it is a little slower to complete and return the results.}
+
+\item{include_overlap}{(Optional). Download database in GMT format to include 'Overlap'
+in the resulting data.frame when analysing with a background. Default is \code{"FALSE"}.}
 
 \item{sleepTime}{(Optional) Time to wait (in seconds) between sending requests to the server to prevent the same results being returned as the previous request. Default is 1.}
 }
@@ -22,13 +32,25 @@ Returns a list of data.frame of enrichment terms, p-values, ...
 Gene enrichment using Enrichr
 }
 \details{
-Gene enrichment using Enrichr
+Gene enrichment using Enrichr, also, you can now try adding a background.
 }
 \examples{
-dbs <- listEnrichrDbs()
-dbs <- c("GO_Molecular_Function_2018", "GO_Cellular_Component_2018",
-         "GO_Biological_Process_2018")
-enriched <- enrichr(c("Runx1", "Gfi1", "Gfi1b", "Spi1", "Gata1", "Kdr"), dbs)
+data(input) # Load example input genes
+data(background) # Load example background genes
+dbs <- c("GO_Molecular_Function_2023", "GO_Cellular_Component_2023",
+         "GO_Biological_Process_2023")
+if (getOption("enrichR.live")) {
+  enriched1 <- enrichr(input, dbs)
+  print(head(enriched1[[1]]))
+
+  # Include background
+  enriched2 <- enrichr(input, dbs, background = background)
+  print(head(enriched2[[1]]))
+
+  # Include background and add 'Overlap' info
+  enriched3 <- enrichr(input, dbs, background = background, include_overlap = TRUE)
+  print(head(enriched3[[1]]))
+}
 }
 \author{
 Wajid Jawaid \email{wajid.jawaid@gmail.com}

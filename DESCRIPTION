@@ -3,7 +3,7 @@ Title: Provides an R Interface to 'Enrichr'
 Version: 3.3
 Authors@R: person("Wajid", "Jawaid", email = "wajid.jawaid@gmail.com", role = c("aut", "cre"))
 Description: Provides an R interface to all 'Enrichr' databases. 'Enrichr' is a web-based tool for analysing gene sets and returns any enrichment of common annotated biological features. Quoting from their website 'Enrichment analysis is a computational method for inferring knowledge about an input gene set by comparing it to annotated gene sets representing prior biological knowledge.' See <https://maayanlab.cloud/Enrichr/> for further details.
-Depends: R (>= 3.0.0)
+Depends: R (>= 3.5.0)
 License: GPL (>=2)
 Encoding: UTF-8
 LazyData: true

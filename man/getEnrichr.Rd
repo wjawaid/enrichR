@@ -2,16 +2,18 @@
 % Please edit documentation in R/functions.R
 \name{getEnrichr}
 \alias{getEnrichr}
-\title{Helper function for GET}
+\title{Helper function for HTTP methods GET and POST}
 \usage{
-getEnrichr(url, startUp = FALSE, ...)
+getEnrichr(method = "GET", url, ...)
 }
 \arguments{
+\item{method}{(Required). HTTP method. Default is \code{"GET"}}
+
 \item{url}{(Required). URL address requested}
 
-\item{startUp}{(Optional). Check if function is called during startUp}
-
 \item{...}{(Optional). Additional parameters to pass to GET}
+
+\item{startUp}{(Optional). Check if function is called during startUp}
 }
 \value{
 same as GET
@@ -20,7 +22,7 @@ same as GET
 Helper function
 }
 \details{
-Helper function for GET
+Helper function for HTTP methods GET and POST
 }
 \author{
 Wajid Jawaid \email{wajid.jawaid@gmail.com}
