@@ -1,3 +1,6 @@
+# enrichR v3.3
+ - Fixed packageStartupMessage when getEnrichr called at startup
+ - Fixed further problems with errors when internet connection was not available
 # enrichR v3.2
  - Fixed further problems with errors when internet connection was not available
  - Automated bibliography using pandoc and .bib files

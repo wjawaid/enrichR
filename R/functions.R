@@ -16,7 +16,7 @@
     options(enrichR.base.address = "https://maayanlab.cloud/Enrichr/")
     options(enrichR.live = TRUE)
     options(enrichR.quiet = FALSE)
-    packageStartupMessage("Welcome to enrichR\nChecking connection ... ", appendLF = TRUE)
+    packageStartupMessage("Welcome to enrichR\nChecking connections ... ", appendLF = TRUE)
     options(modEnrichR.use = TRUE)
     options(enrichR.sites.base.address = "https://maayanlab.cloud/")
     options(enrichR.sites = c("Enrichr", "FlyEnrichr", "WormEnrichr", "YeastEnrichr", "FishEnrichr", "OxEnrichr"))
@@ -24,7 +24,8 @@
         if (getOption("modEnrichR.use")) {
             listEnrichrSites()
         } else {
-            getEnrichr(url=paste0(getOption("enrichR.base.address"), "datasetStatistics"))
+            getEnrichr(url=paste0(getOption("enrichR.base.address"), "datasetStatistics"),
+                       startUp = TRUE)
             packageStartupMessage("Enrichr ... ", appendLF = FALSE)
             if (getOption("enrichR.live")) packageStartupMessage("Connection is Live!")
         }
@@ -40,6 +41,7 @@
 ##' Helper function for GET
 ##' @title Helper function for GET
 ##' @param url (Required). URL address requested
+##' @param startUp (Optional). Check if function is called during startUp
 ##' @param ... (Optional). Additional parameters to pass to GET
 ##' @return same as GET
 ##' @author Wajid Jawaid \email{wj241@alumni.cam.ac.uk}
@@ -47,14 +49,15 @@
 ##' @importFrom httr GET
 ##' @importFrom httr status_code
 ##' @importFrom httr http_status
-getEnrichr <- function(url, ...) {
+getEnrichr <- function(url, startUp = FALSE, ...) {
     options(enrichR.live = FALSE)
+    mssg <- ifelse(startUp, packageStartupMessage, message)
     tryCatch({
         x <- GET(url = url, ...)
         code <- status_code(x)
         if(code != 200) {
             # Error with status code
-            message(http_status(code)$message)
+            mssg(http_status(code)$message)
         } else {
             # OK/success
             options(enrichR.live = TRUE)
@@ -63,11 +66,11 @@ getEnrichr <- function(url, ...) {
     },
     # Warning message
     warning = function(warn) {
-        message(warn); message("") # force newline
+        mssg(warn); mssg("") # force newline
     },
     # Error without status code
     error = function(err) {
-        message(err); message("") # force newline
+        mssg(err); mssg("") # force newline
     },
     finally = function() {
         invisible(x)

@@ -4,10 +4,12 @@
 \alias{getEnrichr}
 \title{Helper function for GET}
 \usage{
-getEnrichr(url, ...)
+getEnrichr(url, startUp = FALSE, ...)
 }
 \arguments{
 \item{url}{(Required). URL address requested}
+
+\item{startUp}{(Optional). Check if function is called during startUp}
 
 \item{...}{(Optional). Additional parameters to pass to GET}
 }
