@@ -356,24 +356,25 @@ listEnrichrDbs <- function() {
 ##' @importFrom utils read.table
 ##' @export
 ##' @examples
-##' data(input) # Load example input genes
-##' data(background) # Load example background genes
-##' dbs <- c("GO_Molecular_Function_2023", "GO_Cellular_Component_2023",
-##'          "GO_Biological_Process_2023")
-##' if (getOption("enrichR.live")) {
-##'   enriched1 <- enrichr(input, dbs)
-##'   print(head(enriched1[[1]]))
+##' # data(input) # Load example input genes
+##' # data(background) # Load example background genes
+##' # dbs <- c("GO_Molecular_Function_2023", "GO_Cellular_Component_2023",
+##' #          "GO_Biological_Process_2023")
+##' # if (getOption("enrichR.live")) {
+##' #   enriched1 <- enrichr(input, dbs)
+##' #   print(head(enriched1[[1]]))
 ##'
-##'   # Include background
-##'   enriched2 <- enrichr(input, dbs, background = background)
-##'   print(head(enriched2[[1]]))
+##' #   # Include background
+##' #   enriched2 <- enrichr(input, dbs, background = background)
+##' #   print(head(enriched2[[1]]))
 ##'
-##'   # Include background and add 'Overlap' info
-##'   enriched3 <- enrichr(input, dbs, background = background, include_overlap = TRUE)
-##'   print(head(enriched3[[1]]))
-##' }
-enrichr <- function(genes, databases = NULL, background = NULL, include_overlap = FALSE, sleepTime = 1) {
-    if (length(genes) < 1) {
+##' #   # Include background and add 'Overlap' info
+##' #   enriched3 <- enrichr(input, dbs, background = background, include_overlap = TRUE)
+##' #   print(head(enriched3[[1]]))
+##' # }
+enrichr <- function(genes, databases = NULL, background = NULL, include_overlap = FALSE,
+                    sleepTime = 1) {
+    if(length(genes) < 1) {
         stop("No genes have been given")
     }
     base.address <- getOption("enrichR.base.address")
@@ -385,7 +386,8 @@ enrichr <- function(genes, databases = NULL, background = NULL, include_overlap 
     Sys.sleep(sleepTime)
     if(!is.null(background)) {
         if(basename(base.address) != "Enrichr") {
-            warning("Enrichment analysis with background genes is only supported on the main site\nSwitching to 'Enrichr'")
+            warning("Enrichment analysis with background genes is only supported on the \\
+                     main site\nSwitching to 'Enrichr'")
             setEnrichrSite("Enrichr")
         } else if(!is.vector(background) | all(background == "") | length(background) == 0)
             stop("'background' is invalid")
@@ -394,7 +396,7 @@ enrichr <- function(genes, databases = NULL, background = NULL, include_overlap 
     options(stringsAsFactors = FALSE)
     if(is.null(background)) {
         if (!getOption("enrichR.quiet")) cat("Uploading data to Enrichr... ")
-        # POST data to server, response not required
+                                        # POST data to server, response not required
         getEnrichr(url = paste0(base.address, "enrich"),
                    body = list(list = .formatGenes(genes, "standard")), method = "POST")
         if (!getOption("enrichR.quiet")) cat("Done.\n")
@@ -409,7 +411,8 @@ enrichr <- function(genes, databases = NULL, background = NULL, include_overlap 
             r <- read.table(tc, sep = "\t", header = TRUE, quote = "", comment.char = "")
             close(tc)
             if (!getOption("enrichR.quiet")) cat("Done.\n")
-	    # Term, Overlap, P.value, Adjusted.P.value, Old.P.value, Old.Adjusted.P.value, Odds.Ratio, Combined.Score, Genes
+            # Term, Overlap, P.value, Adjusted.P.value, Old.P.value, Old.Adjusted.P.value,
+            # Odds.Ratio, Combined.Score, Genes
             return(r)
         })
     } else {
@@ -423,7 +426,8 @@ enrichr <- function(genes, databases = NULL, background = NULL, include_overlap 
 
 	    r <- as.data.frame(do.call(rbind, (lapply(res[[db]], function(i) {
                 i[[6]] <- paste(i[[6]], collapse = ";"); unlist(i) }))))
-            # Rank, Term, P.value, Odds.Ratio, Combined.Score, Genes, Adjusted.P.value, Old.P.value, Old.Adjusted.P.value
+            # Rank, Term, P.value, Odds.Ratio, Combined.Score, Genes, Adjusted.P.value,
+            # Old.P.value, Old.Adjusted.P.value
             colnames(r) <- c("Rank","Term","P.value","Odds.Ratio","Combined.Score","Genes",
                              "Adjusted.P.value","Old.P.value","Old.Adjusted.P.value")
 	    r <- r[,c("Term","Rank","P.value","Adjusted.P.value","Old.P.value",
@@ -530,17 +534,17 @@ enrichr <- function(genes, databases = NULL, background = NULL, include_overlap 
 ##' @importFrom WriteXLS WriteXLS
 ##' @export
 ##' @examples
-##' data(input) # Load example input genes
-##' if (getOption("enrichR.live")) {
-##'   enrichRLive <- TRUE
-##'   dbs <- listEnrichrDbs()
-##'   if(is.null(dbs)) enrichRLive <- FALSE
-##'   dbs <- c("GO_Molecular_Function_2023", "GO_Cellular_Component_2023",
-##'            "GO_Biological_Process_2023")
-##'   enriched <- enrichr(input, dbs)
-##'   print(head(enriched[[1]]))
-##'   # if (enrichRLive) printEnrich(enriched, outFile = "excel")
-##' }
+##' # data(input) # Load example input genes
+##' # if (getOption("enrichR.live")) {
+##' #   enrichRLive <- TRUE
+##' #   dbs <- listEnrichrDbs()
+##' #   if(is.null(dbs)) enrichRLive <- FALSE
+##' #   dbs <- c("GO_Molecular_Function_2023", "GO_Cellular_Component_2023",
+##' #            "GO_Biological_Process_2023")
+##' #   enriched <- enrichr(input, dbs)
+##' #   print(head(enriched[[1]]))
+##' #   # if (enrichRLive) printEnrich(enriched, outFile = "excel")
+##' # }
 printEnrich <- function(data, prefix = "enrichr", showTerms = NULL, columns = c(1:9),
                         outFile = c("txt","excel")) {
     if (!is.list(data)) stop("data is malformed must be a list")
@@ -631,16 +635,16 @@ printEnrich <- function(data, prefix = "enrichr", showTerms = NULL, columns = c(
 ##' @importFrom ggplot2 ggtitle
 ##' @export
 ##' @examples
-##' data(input) # Load example input genes
-##' dbs <- c("GO_Molecular_Function_2023", "GO_Cellular_Component_2023",
-##'          "GO_Biological_Process_2023")
-##' if (getOption("enrichR.live")) {
-##'   enriched <- enrichr(input, dbs)
-##'   print(head(enriched[[1]]))
-##'   # Plot top 20 terms from "GO_Biological_Process_2023" and ordered by P-value
-##'   plotEnrich(enriched[[3]], showTerms = 20, numChar = 50, y = "Count",
-##'              orderBy = "P.value")
-##' }
+##' # data(input) # Load example input genes
+##' # dbs <- c("GO_Molecular_Function_2023", "GO_Cellular_Component_2023",
+##' #          "GO_Biological_Process_2023")
+##' # if (getOption("enrichR.live")) {
+##' #   enriched <- enrichr(input, dbs)
+##' #   print(head(enriched[[1]]))
+##' #   # Plot top 20 terms from "GO_Biological_Process_2023" and ordered by P-value
+##' #   plotEnrich(enriched[[3]], showTerms = 20, numChar = 50, y = "Count",
+##' #              orderBy = "P.value")
+##' # }
 plotEnrich <- function(df, showTerms = 20, numChar = 40, y = "Count", orderBy = "P.value",
                        xlab = NULL, ylab = NULL, title = NULL) {
     if(!is.data.frame(df)) {

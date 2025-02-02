@@ -56,16 +56,16 @@ Visualise a Enrichr output as barplot
 Visualise Enrichr result from a selected gene-set library as barplot.
 }
 \examples{
-data(input) # Load example input genes
-dbs <- c("GO_Molecular_Function_2023", "GO_Cellular_Component_2023",
-         "GO_Biological_Process_2023")
-if (getOption("enrichR.live")) {
-  enriched <- enrichr(input, dbs)
-  print(head(enriched[[1]]))
-  # Plot top 20 terms from "GO_Biological_Process_2023" and ordered by P-value
-  plotEnrich(enriched[[3]], showTerms = 20, numChar = 50, y = "Count",
-             orderBy = "P.value")
-}
+# data(input) # Load example input genes
+# dbs <- c("GO_Molecular_Function_2023", "GO_Cellular_Component_2023",
+#          "GO_Biological_Process_2023")
+# if (getOption("enrichR.live")) {
+#   enriched <- enrichr(input, dbs)
+#   print(head(enriched[[1]]))
+#   # Plot top 20 terms from "GO_Biological_Process_2023" and ordered by P-value
+#   plotEnrich(enriched[[3]], showTerms = 20, numChar = 50, y = "Count",
+#              orderBy = "P.value")
+# }
 }
 \seealso{
 \code{\link[ggplot2]{ggplot}}
