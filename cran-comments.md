@@ -1,3 +1,5 @@
+* enrichR v3.4
+ - Ability to add background gene set included (Thanks to I-Hsuan Lin)
 * enrichR v3.3
  - Fixed packageStartupMessage when getEnrichr called at startup
  - Fixed further problems with errors when internet connection was not available

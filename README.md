@@ -1,7 +1,7 @@
 An R interface to the Enrichr database
 ================
 Wajid Jawaid
-2024-12-07
+2025-02-02
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
@@ -44,7 +44,7 @@ choice. (This functionality was contributed by Alexander Blume)
 ``` r
 library(enrichR)
 #> Welcome to enrichR
-#> Checking connection ...
+#> Checking connections ...
 #> Enrichr ... Connection is Live!
 #> FlyEnrichr ... Connection is Live!
 #> WormEnrichr ... Connection is Live!
@@ -260,9 +260,9 @@ entry-spacing="0">
 
 Kuleshov, Maxim V., Matthew R. Jones, Andrew D. Rouillard, Nicolas F.
 Fernandez, Qiaonan Duan, Zichen Wang, Simon Koplev, et al. 2016.
-“[Enrichr: A Comprehensive Gene Set Enrichment Analysis Web Server 2016
-Update](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4987924).” *Nucleic
-Acids Res* 44 (Web Server issue): W90–97.
+“Enrichr: A Comprehensive Gene Set Enrichment Analysis Web Server 2016
+Update.” *Nucleic Acids Res* 44 (Web Server issue): W90–97.
+<https://doi.org/10.1093/nar/gkw377>.
 
 </div>
 
